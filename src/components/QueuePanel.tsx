@@ -1,6 +1,13 @@
+import type { CSSProperties } from 'react'
 import { Icon } from './Icon'
+import type { Track } from '../data/tracks'
 
-export function QueuePanel() {
+type QueuePanelProps = {
+  tracks: Track[]
+  currentIndex: number
+}
+
+export function QueuePanel({ tracks, currentIndex }: QueuePanelProps) {
   return (
     <div className="right qopen">
       <div className="who">
@@ -23,7 +30,25 @@ export function QueuePanel() {
           Ajouter
         </button>
       </div>
-      <ul className="ql" id="ql" />
+      <ul className="ql" id="ql">
+        {tracks.map((track, index) => (
+          <li key={index}>
+            <button
+              className="row"
+              aria-current={index === currentIndex ? 'true' : undefined}
+            >
+              <span
+                className="th"
+                style={{ '--g': track.gradient } as CSSProperties}
+              />
+              <span className="meta">
+                <b>{track.title}</b>
+                <small>{track.artist}</small>
+              </span>
+            </button>
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }

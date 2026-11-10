@@ -95,7 +95,7 @@ function App() {
           onNext={nextTrack}
           onPrev={prevTrack}
         />
-        <QueuePanel />
+        <QueuePanel tracks={tracks} currentIndex={currentIndex} />
         <footer className="strip" />
       </main>
 
