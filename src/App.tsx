@@ -1,4 +1,5 @@
 import { IconSprite } from './components/Icon'
+import { Sidebar } from './components/Sidebar'
 import './App.css'
 
 function App() {
@@ -6,7 +7,7 @@ function App() {
     <>
       <IconSprite />
       <main className="shell" id="app">
-        <aside className="side" />
+        <Sidebar />
         <section className="stage" aria-label="En cours de lecture" />
         <div className="right qopen" id="right" />
         <footer className="strip" />
