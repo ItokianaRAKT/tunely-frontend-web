@@ -11,6 +11,7 @@ function App() {
   const [tracks] = useState(SEED_TRACKS)
   const [currentIndex] = useState(0)
   const [playing] = useState(true)
+  const [time] = useState(102)
   const track = tracks[currentIndex]
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
@@ -73,7 +74,7 @@ function App() {
           onCreate={createRoom}
           onNav={handleNav}
         />
-        <Stage track={track} index={currentIndex} />
+        <Stage track={track} index={currentIndex} time={time} />
         <div className="right qopen" id="right" />
         <footer className="strip" />
       </main>

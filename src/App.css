@@ -232,6 +232,54 @@ h2 {
   letter-spacing: -0.01em;
 }
 
+.bar {
+  position: relative;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  touch-action: none;
+}
+
+.bar .tr {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgba(242, 240, 233, 0.28);
+}
+
+.bar .fl {
+  position: absolute;
+  left: 0;
+  height: 3px;
+  background: var(--blue);
+  width: 0;
+}
+
+.bar .kn {
+  position: absolute;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--chalk);
+  transform: translateX(-50%);
+  left: 0;
+  transition: transform 0.14s;
+}
+
+.bar:hover .kn,
+.bar:focus-visible .kn {
+  transform: translateX(-50%) scale(1.25);
+}
+
+.times {
+  display: flex;
+  justify-content: space-between;
+  font: 400 14px var(--ui);
+  margin-top: 2px;
+}
+
 /* toast */
 #toast {
   position: fixed;

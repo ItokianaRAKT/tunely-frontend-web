@@ -3,9 +3,17 @@ import type { Track } from '../data/tracks'
 type StageProps = {
   track: Track
   index: number
+  time: number
 }
 
-export function Stage({ track, index }: StageProps) {
+function formatTime(seconds: number) {
+  const total = Math.floor(seconds)
+  return `${Math.floor(total / 60)}:${`0${total % 60}`.slice(-2)}`
+}
+
+export function Stage({ track, index, time }: StageProps) {
+  const progress = Math.min(1, time / track.duration) * 100
+
   return (
     <section className="stage" aria-label="En cours de lecture">
       <svg
@@ -60,6 +68,24 @@ export function Stage({ track, index }: StageProps) {
       </div>
       <h1>{track.artist}</h1>
       <h2>{track.title}</h2>
+      <div
+        className="bar"
+        role="slider"
+        tabIndex={0}
+        aria-label="Progression"
+        aria-valuemin={0}
+        aria-valuemax={track.duration}
+        aria-valuenow={Math.floor(time)}
+        aria-valuetext={`${formatTime(time)} sur ${formatTime(track.duration)}`}
+      >
+        <div className="tr" />
+        <div className="fl" style={{ width: `${progress}%` }} />
+        <div className="kn" style={{ left: `${progress}%` }} />
+      </div>
+      <div className="times">
+        <span>{formatTime(time)}</span>
+        <span>{formatTime(track.duration)}</span>
+      </div>
     </section>
   )
 }
