@@ -45,6 +45,13 @@ export function QueuePanel({ tracks, currentIndex }: QueuePanelProps) {
                 <b>{track.title}</b>
                 <small>{track.artist}</small>
               </span>
+              {index === currentIndex && (
+                <span className="eq" aria-label="En cours">
+                  <s />
+                  <s />
+                  <s />
+                </span>
+              )}
             </button>
           </li>
         ))}

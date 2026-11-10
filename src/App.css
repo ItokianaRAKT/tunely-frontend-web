@@ -498,6 +498,52 @@ h2 {
   display: block;
 }
 
+.eq {
+  display: flex;
+  gap: 2px;
+  align-items: flex-end;
+  height: 16px;
+}
+
+.eq s {
+  width: 3px;
+  background: var(--blue);
+  height: 60%;
+  animation: eq 0.9s infinite alternate ease-in-out;
+}
+
+.eq s:nth-child(2) {
+  animation-delay: 0.2s;
+  height: 100%;
+}
+
+.eq s:nth-child(3) {
+  animation-delay: 0.4s;
+  height: 40%;
+}
+
+.paused .eq s {
+  animation: none;
+}
+
+@keyframes eq {
+  to {
+    transform: scaleY(0.35);
+    transform-origin: bottom;
+  }
+}
+
+.ql li.new {
+  animation: in 0.22s ease-out;
+}
+
+@keyframes in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
 /* toast */
 #toast {
   position: fixed;
