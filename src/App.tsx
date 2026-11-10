@@ -1,8 +1,10 @@
+import { IconSprite } from './components/Icon'
 import './App.css'
 
 function App() {
   return (
     <>
+      <IconSprite />
       <main className="shell" id="app">
         <aside className="side" />
         <section className="stage" aria-label="En cours de lecture" />
