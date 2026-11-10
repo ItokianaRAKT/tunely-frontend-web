@@ -3,20 +3,25 @@ import { IconSprite } from './components/Icon'
 import { Sidebar } from './components/Sidebar'
 import { Stage } from './components/Stage'
 import { QueuePanel } from './components/QueuePanel'
-import { SEED_TRACKS } from './data/tracks'
+import { usePlayer } from './hooks/usePlayer'
 import './App.css'
 
 function App() {
   const [toast, setToast] = useState('')
   const [roomCode, setRoomCode] = useState('#7F3Q')
-  const [tracks] = useState(SEED_TRACKS)
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [playing, setPlaying] = useState(true)
-  const [time] = useState(102)
-  const track = tracks[currentIndex]
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
   )
+  const {
+    tracks,
+    track,
+    currentIndex,
+    time,
+    playing,
+    togglePlay,
+    nextTrack,
+    prevTrack,
+  } = usePlayer()
 
   const showToast = useCallback((message: string) => {
     setToast(message)
@@ -64,18 +69,6 @@ function App() {
     setRoomCode(next)
     showToast(`Nouvelle Room simulée · code ${next}`)
   }, [showToast])
-
-  const togglePlay = useCallback(() => setPlaying((value) => !value), [])
-
-  const nextTrack = useCallback(
-    () => setCurrentIndex((index) => (index + 1) % tracks.length),
-    [tracks.length],
-  )
-
-  const prevTrack = useCallback(
-    () => setCurrentIndex((index) => (index - 1 + tracks.length) % tracks.length),
-    [tracks.length],
-  )
 
   return (
     <>
