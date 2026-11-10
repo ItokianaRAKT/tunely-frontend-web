@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { CSSProperties } from 'react'
 import { Icon } from './Icon'
 import type { Track } from '../data/tracks'
@@ -8,8 +9,10 @@ type QueuePanelProps = {
 }
 
 export function QueuePanel({ tracks, currentIndex }: QueuePanelProps) {
+  const [open, setOpen] = useState(true)
+
   return (
-    <div className="right qopen">
+    <div className={open ? 'right qopen' : 'right'}>
       <div className="who">
         <span>
           <Icon name="users" />
@@ -21,9 +24,17 @@ export function QueuePanel({ tracks, currentIndex }: QueuePanelProps) {
         </button>
       </div>
       <div className="qh">
-        <button className="qt">
+        <button
+          className="qt"
+          aria-expanded={open}
+          aria-controls="ql"
+          onClick={() => setOpen((value) => !value)}
+        >
           <Icon name="list" />
           File d’attente
+          <span className="chev">
+            <Icon name="chev" />
+          </span>
         </button>
         <button className="ghost">
           <Icon name="plus" style={{ width: 14, height: 14 }} />
