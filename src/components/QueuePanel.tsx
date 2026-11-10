@@ -7,12 +7,14 @@ type QueuePanelProps = {
   tracks: Track[]
   currentIndex: number
   onPick: (index: number) => void
+  onAdd: () => void
 }
 
 export function QueuePanel({
   tracks,
   currentIndex,
   onPick,
+  onAdd,
 }: QueuePanelProps) {
   const [open, setOpen] = useState(true)
 
@@ -41,7 +43,7 @@ export function QueuePanel({
             <Icon name="chev" />
           </span>
         </button>
-        <button className="ghost">
+        <button className="ghost" onClick={onAdd}>
           <Icon name="plus" style={{ width: 14, height: 14 }} />
           Ajouter
         </button>

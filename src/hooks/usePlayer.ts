@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { SEED_TRACKS } from '../data/tracks'
+import { GRADIENTS, SEED_TRACKS } from '../data/tracks'
 
 type Notify = (message: string) => void
 
 export function usePlayer(notify: Notify) {
-  const [tracks] = useState(SEED_TRACKS)
+  const [tracks, setTracks] = useState(SEED_TRACKS)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [playing, setPlaying] = useState(true)
   const [time, setTime] = useState(102)
@@ -117,6 +117,16 @@ export function usePlayer(notify: Notify) {
     [currentIndex, goToTrack],
   )
 
+  const addTrack = useCallback(
+    (title: string, artist: string) => {
+      const duration = 180 + Math.floor(Math.random() * 121)
+      const gradient = GRADIENTS[tracks.length % GRADIENTS.length]
+      setTracks((list) => [...list, { title, artist, duration, gradient }])
+      notify(`« ${title} » ajouté à la file`)
+    },
+    [tracks.length, notify],
+  )
+
   return {
     tracks,
     track,
@@ -133,5 +143,6 @@ export function usePlayer(notify: Notify) {
     toggleRepeat,
     seekTo,
     selectTrack,
+    addTrack,
   }
 }

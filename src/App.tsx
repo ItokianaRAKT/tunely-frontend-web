@@ -4,12 +4,14 @@ import { Sidebar } from './components/Sidebar'
 import { Stage } from './components/Stage'
 import { QueuePanel } from './components/QueuePanel'
 import { StatusStrip } from './components/StatusStrip'
+import { AddTrackDialog } from './components/AddTrackDialog'
 import { usePlayer } from './hooks/usePlayer'
 import './App.css'
 
 function App() {
   const [toast, setToast] = useState('')
   const [roomCode, setRoomCode] = useState('#7F3Q')
+  const [adding, setAdding] = useState(false)
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
   )
@@ -36,6 +38,7 @@ function App() {
     toggleRepeat,
     seekTo,
     selectTrack,
+    addTrack,
   } = usePlayer(showToast)
 
   const handleNav = useCallback(
@@ -106,6 +109,7 @@ function App() {
           tracks={tracks}
           currentIndex={currentIndex}
           onPick={selectTrack}
+          onAdd={() => setAdding(true)}
         />
         <StatusStrip
           track={track}
@@ -113,6 +117,12 @@ function App() {
           upcoming={tracks[upcomingIndex]}
         />
       </main>
+
+      <AddTrackDialog
+        open={adding}
+        onClose={() => setAdding(false)}
+        onAdd={addTrack}
+      />
 
       <div
         id="toast"
