@@ -6,9 +6,14 @@ import type { Track } from '../data/tracks'
 type QueuePanelProps = {
   tracks: Track[]
   currentIndex: number
+  onPick: (index: number) => void
 }
 
-export function QueuePanel({ tracks, currentIndex }: QueuePanelProps) {
+export function QueuePanel({
+  tracks,
+  currentIndex,
+  onPick,
+}: QueuePanelProps) {
   const [open, setOpen] = useState(true)
 
   return (
@@ -47,6 +52,7 @@ export function QueuePanel({ tracks, currentIndex }: QueuePanelProps) {
             <button
               className="row"
               aria-current={index === currentIndex ? 'true' : undefined}
+              onClick={() => onPick(index)}
             >
               <span
                 className="th"

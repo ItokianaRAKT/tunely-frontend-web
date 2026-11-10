@@ -1,3 +1,5 @@
+import { useRef } from 'react'
+import type { KeyboardEvent, PointerEvent } from 'react'
 import { Icon } from './Icon'
 import type { Track } from '../data/tracks'
 
@@ -10,6 +12,7 @@ type StageProps = {
   onTogglePlay: () => void
   onToggleShuffle: () => void
   onToggleRepeat: () => void
+  onSeek: (seconds: number) => void
   onNext: () => void
   onPrev: () => void
 }
@@ -28,10 +31,43 @@ export function Stage({
   onTogglePlay,
   onToggleShuffle,
   onToggleRepeat,
+  onSeek,
   onNext,
   onPrev,
 }: StageProps) {
+  const barRef = useRef<HTMLDivElement>(null)
   const progress = Math.min(1, time / track.duration) * 100
+
+  const seekFromPointer = (clientX: number) => {
+    const rect = barRef.current?.getBoundingClientRect()
+    if (!rect) return
+    const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width))
+    onSeek(ratio * track.duration)
+  }
+
+  const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
+    event.currentTarget.setPointerCapture(event.pointerId)
+    seekFromPointer(event.clientX)
+  }
+
+  const handlePointerMove = (event: PointerEvent<HTMLDivElement>) => {
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      seekFromPointer(event.clientX)
+    }
+  }
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    const deltas: Record<string, number> = {
+      ArrowRight: 5,
+      ArrowLeft: -5,
+      ArrowUp: 5,
+      ArrowDown: -5,
+    }
+    const delta = deltas[event.key]
+    if (delta === undefined) return
+    event.preventDefault()
+    onSeek(Math.max(0, Math.min(track.duration, time + delta)))
+  }
 
   return (
     <section className="stage" aria-label="En cours de lecture">
@@ -89,6 +125,7 @@ export function Stage({
       <h2>{track.title}</h2>
       <div
         className="bar"
+        ref={barRef}
         role="slider"
         tabIndex={0}
         aria-label="Progression"
@@ -96,6 +133,9 @@ export function Stage({
         aria-valuemax={track.duration}
         aria-valuenow={Math.floor(time)}
         aria-valuetext={`${formatTime(time)} sur ${formatTime(track.duration)}`}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onKeyDown={handleKeyDown}
       >
         <div className="tr" />
         <div className="fl" style={{ width: `${progress}%` }} />

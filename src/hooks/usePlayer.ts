@@ -84,6 +84,20 @@ export function usePlayer(notify: Notify) {
     notify(next ? 'Répétition du titre activée' : 'Répétition désactivée')
   }, [repeat, notify])
 
+  const seekTo = useCallback(
+    (seconds: number) => setTime(Math.max(0, Math.min(track.duration, seconds))),
+    [track.duration],
+  )
+
+  const selectTrack = useCallback(
+    (index: number) => {
+      if (index !== currentIndex) setTime(0)
+      setCurrentIndex(index)
+      setPlaying(true)
+    },
+    [currentIndex],
+  )
+
   return {
     tracks,
     track,
@@ -97,5 +111,7 @@ export function usePlayer(notify: Notify) {
     prevTrack,
     toggleShuffle,
     toggleRepeat,
+    seekTo,
+    selectTrack,
   }
 }

@@ -32,6 +32,8 @@ function App() {
     prevTrack,
     toggleShuffle,
     toggleRepeat,
+    seekTo,
+    selectTrack,
   } = usePlayer(showToast)
 
   const handleNav = useCallback(
@@ -94,10 +96,15 @@ function App() {
           onTogglePlay={togglePlay}
           onToggleShuffle={toggleShuffle}
           onToggleRepeat={toggleRepeat}
+          onSeek={seekTo}
           onNext={nextTrack}
           onPrev={prevTrack}
         />
-        <QueuePanel tracks={tracks} currentIndex={currentIndex} />
+        <QueuePanel
+          tracks={tracks}
+          currentIndex={currentIndex}
+          onPick={selectTrack}
+        />
         <footer className="strip" />
       </main>
 
