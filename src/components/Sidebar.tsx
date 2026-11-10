@@ -1,6 +1,23 @@
-import { Icon } from './Icon'
+import { useState } from 'react'
+import { Icon, type IconName } from './Icon'
 
-export function Sidebar() {
+type SidebarProps = {
+  onNav: (label: string) => void
+}
+
+const NAV_ITEMS: { label: string; icon: IconName }[] = [
+  { label: 'Accueil', icon: 'home' },
+  { label: 'Mes Rooms', icon: 'folder' },
+]
+
+export function Sidebar({ onNav }: SidebarProps) {
+  const [active, setActive] = useState('Accueil')
+
+  const handleNav = (label: string) => {
+    setActive(label)
+    onNav(label)
+  }
+
   return (
     <aside className="side">
       <div className="wm">TUNELY.</div>
@@ -15,14 +32,16 @@ export function Sidebar() {
         </div>
       </div>
       <nav aria-label="Navigation">
-        <button aria-current="true">
-          <Icon name="home" />
-          Accueil
-        </button>
-        <button>
-          <Icon name="folder" />
-          Mes Rooms
-        </button>
+        {NAV_ITEMS.map(({ label, icon }) => (
+          <button
+            key={label}
+            aria-current={active === label ? 'true' : undefined}
+            onClick={() => handleNav(label)}
+          >
+            <Icon name={icon} />
+            {label}
+          </button>
+        ))}
         <button>
           <Icon name="plus" />
           Créer une Room
