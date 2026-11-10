@@ -1,11 +1,18 @@
 import { useCallback, useRef, useState } from 'react'
 import { IconSprite } from './components/Icon'
 import { Sidebar } from './components/Sidebar'
+import { Stage } from './components/Stage'
+import { SEED_TRACKS } from './data/tracks'
 import './App.css'
 
 function App() {
   const [toast, setToast] = useState('')
   const [roomCode, setRoomCode] = useState('#7F3Q')
+  const [tracks] = useState(SEED_TRACKS)
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [playing, setPlaying] = useState(true)
+  const [time] = useState(102)
+  const track = tracks[currentIndex]
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
   )
@@ -57,17 +64,36 @@ function App() {
     showToast(`Nouvelle Room simulée · code ${next}`)
   }, [showToast])
 
+  const togglePlay = useCallback(() => setPlaying((value) => !value), [])
+
+  const nextTrack = useCallback(
+    () => setCurrentIndex((index) => (index + 1) % tracks.length),
+    [tracks.length],
+  )
+
+  const prevTrack = useCallback(
+    () => setCurrentIndex((index) => (index - 1 + tracks.length) % tracks.length),
+    [tracks.length],
+  )
+
   return (
     <>
       <IconSprite />
-      <main className="shell" id="app">
+      <main className={playing ? 'shell' : 'shell paused'} id="app">
         <Sidebar
           code={roomCode}
           onCopy={copyCode}
           onCreate={createRoom}
           onNav={handleNav}
         />
-        <section className="stage" aria-label="En cours de lecture" />
+        <Stage
+          track={track}
+          index={currentIndex}
+          time={time}
+          onTogglePlay={togglePlay}
+          onNext={nextTrack}
+          onPrev={prevTrack}
+        />
         <div className="right qopen" id="right" />
         <footer className="strip" />
       </main>
