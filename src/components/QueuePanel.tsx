@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef } from 'react'
 import type { CSSProperties } from 'react'
 import { Icon } from './Icon'
 import type { Track } from '../data/tracks'
@@ -6,6 +6,9 @@ import type { Track } from '../data/tracks'
 type QueuePanelProps = {
   tracks: Track[]
   currentIndex: number
+  newIndex: number | null
+  open: boolean
+  onToggle: () => void
   onPick: (index: number) => void
   onAdd: () => void
 }
@@ -13,10 +16,19 @@ type QueuePanelProps = {
 export function QueuePanel({
   tracks,
   currentIndex,
+  newIndex,
+  open,
+  onToggle,
   onPick,
   onAdd,
 }: QueuePanelProps) {
-  const [open, setOpen] = useState(true)
+  const listRef = useRef<HTMLUListElement>(null)
+
+  useEffect(() => {
+    if (newIndex === null) return
+    const list = listRef.current
+    if (list) list.scrollTop = list.scrollHeight
+  }, [newIndex])
 
   return (
     <div className={open ? 'right qopen' : 'right'}>
@@ -35,7 +47,7 @@ export function QueuePanel({
           className="qt"
           aria-expanded={open}
           aria-controls="ql"
-          onClick={() => setOpen((value) => !value)}
+          onClick={onToggle}
         >
           <Icon name="list" />
           File d’attente
@@ -48,9 +60,12 @@ export function QueuePanel({
           Ajouter
         </button>
       </div>
-      <ul className="ql" id="ql">
+      <ul className="ql" id="ql" ref={listRef}>
         {tracks.map((track, index) => (
-          <li key={index}>
+          <li
+            key={index}
+            className={index === newIndex ? 'new' : undefined}
+          >
             <button
               className="row"
               aria-current={index === currentIndex ? 'true' : undefined}

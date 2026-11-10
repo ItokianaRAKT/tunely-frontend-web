@@ -11,6 +11,7 @@ export function usePlayer(notify: Notify) {
   const [shuffle, setShuffle] = useState(false)
   const [repeat, setRepeat] = useState(false)
   const [shuffleTarget, setShuffleTarget] = useState<number | null>(null)
+  const [newIndex, setNewIndex] = useState<number | null>(null)
 
   const track = tracks[currentIndex]
 
@@ -122,6 +123,7 @@ export function usePlayer(notify: Notify) {
       const duration = 180 + Math.floor(Math.random() * 121)
       const gradient = GRADIENTS[tracks.length % GRADIENTS.length]
       setTracks((list) => [...list, { title, artist, duration, gradient }])
+      setNewIndex(tracks.length)
       notify(`« ${title} » ajouté à la file`)
     },
     [tracks.length, notify],
@@ -144,5 +146,6 @@ export function usePlayer(notify: Notify) {
     seekTo,
     selectTrack,
     addTrack,
+    newIndex,
   }
 }

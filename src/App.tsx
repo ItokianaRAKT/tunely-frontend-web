@@ -12,6 +12,7 @@ function App() {
   const [toast, setToast] = useState('')
   const [roomCode, setRoomCode] = useState('#7F3Q')
   const [adding, setAdding] = useState(false)
+  const [queueOpen, setQueueOpen] = useState(true)
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
   )
@@ -39,6 +40,7 @@ function App() {
     seekTo,
     selectTrack,
     addTrack,
+    newIndex,
   } = usePlayer(showToast)
 
   const handleNav = useCallback(
@@ -82,6 +84,14 @@ function App() {
     showToast(`Nouvelle Room simulée · code ${next}`)
   }, [showToast])
 
+  const handleAddTrack = useCallback(
+    (title: string, artist: string) => {
+      addTrack(title, artist)
+      setQueueOpen(true)
+    },
+    [addTrack],
+  )
+
   return (
     <>
       <IconSprite />
@@ -108,6 +118,9 @@ function App() {
         <QueuePanel
           tracks={tracks}
           currentIndex={currentIndex}
+          newIndex={newIndex}
+          open={queueOpen}
+          onToggle={() => setQueueOpen((value) => !value)}
           onPick={selectTrack}
           onAdd={() => setAdding(true)}
         />
@@ -121,7 +134,7 @@ function App() {
       <AddTrackDialog
         open={adding}
         onClose={() => setAdding(false)}
-        onAdd={addTrack}
+        onAdd={handleAddTrack}
       />
 
       <div
