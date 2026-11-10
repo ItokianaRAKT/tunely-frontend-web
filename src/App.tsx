@@ -5,6 +5,7 @@ import './App.css'
 
 function App() {
   const [toast, setToast] = useState('')
+  const [roomCode, setRoomCode] = useState('#7F3Q')
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
   )
@@ -20,11 +21,52 @@ function App() {
     [showToast],
   )
 
+  const copyCode = useCallback(() => {
+    const fallback = () => {
+      const area = document.createElement('textarea')
+      area.value = roomCode
+      area.style.cssText = 'position:fixed;opacity:0'
+      document.body.appendChild(area)
+      area.select()
+      try {
+        if (document.execCommand('copy')) showToast(`Code ${roomCode} copié`)
+        else showToast(`Copie impossible : ${roomCode}`)
+      } catch {
+        showToast(`Copie impossible : ${roomCode}`)
+      }
+      area.remove()
+    }
+
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(roomCode).then(
+        () => showToast(`Code ${roomCode} copié`),
+        fallback,
+      )
+    } else {
+      fallback()
+    }
+  }, [roomCode, showToast])
+
+  const createRoom = useCallback(() => {
+    const alphabet = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ'
+    let next = '#'
+    for (let i = 0; i < 4; i += 1) {
+      next += alphabet[Math.floor(Math.random() * alphabet.length)]
+    }
+    setRoomCode(next)
+    showToast(`Nouvelle Room simulée · code ${next}`)
+  }, [showToast])
+
   return (
     <>
       <IconSprite />
       <main className="shell" id="app">
-        <Sidebar onNav={handleNav} />
+        <Sidebar
+          code={roomCode}
+          onCopy={copyCode}
+          onCreate={createRoom}
+          onNav={handleNav}
+        />
         <section className="stage" aria-label="En cours de lecture" />
         <div className="right qopen" id="right" />
         <footer className="strip" />

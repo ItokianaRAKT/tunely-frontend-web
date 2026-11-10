@@ -2,6 +2,9 @@ import { useState } from 'react'
 import { Icon, type IconName } from './Icon'
 
 type SidebarProps = {
+  code: string
+  onCopy: () => void
+  onCreate: () => void
   onNav: (label: string) => void
 }
 
@@ -10,7 +13,7 @@ const NAV_ITEMS: { label: string; icon: IconName }[] = [
   { label: 'Mes Rooms', icon: 'folder' },
 ]
 
-export function Sidebar({ onNav }: SidebarProps) {
+export function Sidebar({ code, onCopy, onCreate, onNav }: SidebarProps) {
   const [active, setActive] = useState('Accueil')
 
   const handleNav = (label: string) => {
@@ -25,8 +28,12 @@ export function Sidebar({ onNav }: SidebarProps) {
         <Icon name="logo" className="mk" style={{ width: 24, height: 20 }} />
         <div>
           <b>Ma Room</b>
-          <button className="code" aria-label="Copier le code de la Room">
-            <span>#7F3Q</span>
+          <button
+            className="code"
+            aria-label="Copier le code de la Room"
+            onClick={onCopy}
+          >
+            <span>{code}</span>
             <Icon name="copy" />
           </button>
         </div>
@@ -42,7 +49,7 @@ export function Sidebar({ onNav }: SidebarProps) {
             {label}
           </button>
         ))}
-        <button>
+        <button onClick={onCreate}>
           <Icon name="plus" />
           Créer une Room
         </button>
