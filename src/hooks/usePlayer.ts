@@ -78,6 +78,8 @@ export function usePlayer(notify: Notify) {
     setPlaying((value) => !value)
   }, [playing, time, track.duration])
 
+  const pausePlayback = useCallback(() => setPlaying(false), [])
+
   const nextTrack = useCallback(
     () => goToTrack(upcomingIndex),
     [goToTrack, upcomingIndex],
@@ -139,6 +141,7 @@ export function usePlayer(notify: Notify) {
     shuffle,
     repeat,
     togglePlay,
+    pausePlayback,
     nextTrack,
     prevTrack,
     toggleShuffle,

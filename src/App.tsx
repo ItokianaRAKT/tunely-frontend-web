@@ -41,6 +41,7 @@ function App() {
     selectTrack,
     addTrack,
     newIndex,
+    pausePlayback,
   } = usePlayer(showToast)
 
   const handleNav = useCallback(
@@ -92,6 +93,11 @@ function App() {
     [addTrack],
   )
 
+  const quitRoom = useCallback(() => {
+    pausePlayback()
+    showToast('Room quittée (simulation) · lecture en pause')
+  }, [pausePlayback, showToast])
+
   return (
     <>
       <IconSprite />
@@ -123,6 +129,7 @@ function App() {
           onToggle={() => setQueueOpen((value) => !value)}
           onPick={selectTrack}
           onAdd={() => setAdding(true)}
+          onQuit={quitRoom}
         />
         <StatusStrip
           track={track}

@@ -11,6 +11,7 @@ type QueuePanelProps = {
   onToggle: () => void
   onPick: (index: number) => void
   onAdd: () => void
+  onQuit: () => void
 }
 
 export function QueuePanel({
@@ -21,6 +22,7 @@ export function QueuePanel({
   onToggle,
   onPick,
   onAdd,
+  onQuit,
 }: QueuePanelProps) {
   const listRef = useRef<HTMLUListElement>(null)
 
@@ -37,7 +39,7 @@ export function QueuePanel({
           <Icon name="users" />
           4 participants
         </span>
-        <button className="ghost">
+        <button className="ghost" onClick={onQuit}>
           <Icon name="exit" />
           Quitter la Room
         </button>
