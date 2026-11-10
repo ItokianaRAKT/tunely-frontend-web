@@ -280,6 +280,75 @@ h2 {
   margin-top: 2px;
 }
 
+.ctl {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 44px;
+  margin-top: 20px;
+}
+
+.ctl button {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  transition:
+    background 0.16s,
+    color 0.16s,
+    transform 0.14s;
+}
+
+.ctl button:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.ctl button[aria-pressed='true'] {
+  color: #6f8bff;
+  background: rgba(36, 76, 255, 0.2);
+}
+
+.ctl svg {
+  width: 22px;
+  height: 22px;
+}
+
+.ctl .skip svg {
+  fill: currentColor;
+}
+
+.ctl .pp {
+  width: 56px;
+  height: 56px;
+  background: var(--chalk);
+  color: var(--ink);
+}
+
+.ctl .pp:hover {
+  background: #fff;
+  transform: scale(1.05);
+}
+
+.ctl .pp svg {
+  fill: currentColor;
+  stroke: none;
+  width: 24px;
+  height: 24px;
+}
+
+.ctl .pp .pl {
+  display: none;
+}
+
+.paused .pp .pl {
+  display: block;
+}
+
+.paused .pp .ps {
+  display: none;
+}
+
 /* toast */
 #toast {
   position: fixed;
@@ -313,6 +382,9 @@ h2 {
   }
   .stage {
     padding: 0 30px 30px;
+  }
+  .ctl {
+    gap: 28px;
   }
 }
 
@@ -359,6 +431,14 @@ h2 {
   }
   h2 {
     margin-bottom: 24px;
+  }
+  .ctl {
+    gap: 0;
+    justify-content: space-between;
+  }
+  .ctl .pp {
+    width: 64px;
+    height: 64px;
   }
   .right {
     border: 0;

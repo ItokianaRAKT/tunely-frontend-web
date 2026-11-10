@@ -1,9 +1,13 @@
+import { Icon } from './Icon'
 import type { Track } from '../data/tracks'
 
 type StageProps = {
   track: Track
   index: number
   time: number
+  onTogglePlay: () => void
+  onNext: () => void
+  onPrev: () => void
 }
 
 function formatTime(seconds: number) {
@@ -11,7 +15,14 @@ function formatTime(seconds: number) {
   return `${Math.floor(total / 60)}:${`0${total % 60}`.slice(-2)}`
 }
 
-export function Stage({ track, index, time }: StageProps) {
+export function Stage({
+  track,
+  index,
+  time,
+  onTogglePlay,
+  onNext,
+  onPrev,
+}: StageProps) {
   const progress = Math.min(1, time / track.duration) * 100
 
   return (
@@ -85,6 +96,33 @@ export function Stage({ track, index, time }: StageProps) {
       <div className="times">
         <span>{formatTime(time)}</span>
         <span>{formatTime(track.duration)}</span>
+      </div>
+      <div className="ctl">
+        <button aria-pressed="false" aria-label="Aléatoire">
+          <Icon name="shuffle" />
+        </button>
+        <button className="skip" aria-label="Précédent" onClick={onPrev}>
+          <Icon name="prev" />
+        </button>
+        <button
+          className="pp"
+          aria-label="Lecture / pause"
+          onClick={onTogglePlay}
+        >
+          <svg className="ps" viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="6" y="4" width="4" height="16" />
+            <rect x="14" y="4" width="4" height="16" />
+          </svg>
+          <svg className="pl" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M8 5v14l11-7z" />
+          </svg>
+        </button>
+        <button className="skip" aria-label="Suivant" onClick={onNext}>
+          <Icon name="next" />
+        </button>
+        <button aria-pressed="false" aria-label="Répéter">
+          <Icon name="repeat" />
+        </button>
       </div>
     </section>
   )

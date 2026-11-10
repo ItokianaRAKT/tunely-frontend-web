@@ -9,8 +9,8 @@ function App() {
   const [toast, setToast] = useState('')
   const [roomCode, setRoomCode] = useState('#7F3Q')
   const [tracks] = useState(SEED_TRACKS)
-  const [currentIndex] = useState(0)
-  const [playing] = useState(true)
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [playing, setPlaying] = useState(true)
   const [time] = useState(102)
   const track = tracks[currentIndex]
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
@@ -64,6 +64,18 @@ function App() {
     showToast(`Nouvelle Room simulée · code ${next}`)
   }, [showToast])
 
+  const togglePlay = useCallback(() => setPlaying((value) => !value), [])
+
+  const nextTrack = useCallback(
+    () => setCurrentIndex((index) => (index + 1) % tracks.length),
+    [tracks.length],
+  )
+
+  const prevTrack = useCallback(
+    () => setCurrentIndex((index) => (index - 1 + tracks.length) % tracks.length),
+    [tracks.length],
+  )
+
   return (
     <>
       <IconSprite />
@@ -74,7 +86,14 @@ function App() {
           onCreate={createRoom}
           onNav={handleNav}
         />
-        <Stage track={track} index={currentIndex} time={time} />
+        <Stage
+          track={track}
+          index={currentIndex}
+          time={time}
+          onTogglePlay={togglePlay}
+          onNext={nextTrack}
+          onPrev={prevTrack}
+        />
         <div className="right qopen" id="right" />
         <footer className="strip" />
       </main>
