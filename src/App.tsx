@@ -12,22 +12,27 @@ function App() {
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
   )
-  const {
-    tracks,
-    track,
-    currentIndex,
-    time,
-    playing,
-    togglePlay,
-    nextTrack,
-    prevTrack,
-  } = usePlayer()
 
   const showToast = useCallback((message: string) => {
     setToast(message)
     clearTimeout(toastTimer.current)
     toastTimer.current = setTimeout(() => setToast(''), 2200)
   }, [])
+
+  const {
+    tracks,
+    track,
+    currentIndex,
+    time,
+    playing,
+    shuffle,
+    repeat,
+    togglePlay,
+    nextTrack,
+    prevTrack,
+    toggleShuffle,
+    toggleRepeat,
+  } = usePlayer(showToast)
 
   const handleNav = useCallback(
     (label: string) => showToast(`${label} : non disponible dans ce prototype`),
@@ -84,7 +89,11 @@ function App() {
           track={track}
           index={currentIndex}
           time={time}
+          shuffle={shuffle}
+          repeat={repeat}
           onTogglePlay={togglePlay}
+          onToggleShuffle={toggleShuffle}
+          onToggleRepeat={toggleRepeat}
           onNext={nextTrack}
           onPrev={prevTrack}
         />

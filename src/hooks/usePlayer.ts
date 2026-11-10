@@ -1,13 +1,30 @@
 import { useCallback, useEffect, useState } from 'react'
 import { SEED_TRACKS } from '../data/tracks'
 
-export function usePlayer() {
+type Notify = (message: string) => void
+
+export function usePlayer(notify: Notify) {
   const [tracks] = useState(SEED_TRACKS)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [playing, setPlaying] = useState(true)
   const [time, setTime] = useState(102)
+  const [shuffle, setShuffle] = useState(false)
+  const [repeat, setRepeat] = useState(false)
 
   const track = tracks[currentIndex]
+
+  const pickNextIndex = useCallback(() => {
+    const count = tracks.length
+    if (count < 2) return currentIndex
+    if (shuffle) {
+      let candidate = currentIndex
+      while (candidate === currentIndex) {
+        candidate = Math.floor(Math.random() * count)
+      }
+      return candidate
+    }
+    return (currentIndex + 1) % count
+  }, [tracks.length, shuffle, currentIndex])
 
   useEffect(() => {
     if (!playing) return
@@ -17,27 +34,55 @@ export function usePlayer() {
 
   useEffect(() => {
     if (time < track.duration) return
-    if (currentIndex === tracks.length - 1) {
+    if (repeat) {
+      setTime(0)
+      return
+    }
+    if (!shuffle && currentIndex === tracks.length - 1) {
       setTime(track.duration)
       setPlaying(false)
-    } else {
-      setTime(0)
-      setCurrentIndex((index) => (index + 1) % tracks.length)
+      return
     }
-  }, [time, track.duration, currentIndex, tracks.length])
+    setTime(0)
+    setCurrentIndex(pickNextIndex())
+  }, [
+    time,
+    track.duration,
+    currentIndex,
+    tracks.length,
+    repeat,
+    shuffle,
+    pickNextIndex,
+  ])
 
-  const togglePlay = useCallback(() => setPlaying((value) => !value), [])
+  const togglePlay = useCallback(() => {
+    if (!playing && time >= track.duration) setTime(0)
+    setPlaying((value) => !value)
+  }, [playing, time, track.duration])
 
-  const nextTrack = useCallback(
-    () => setCurrentIndex((index) => (index + 1) % tracks.length),
-    [tracks.length],
-  )
+  const nextTrack = useCallback(() => {
+    setTime(0)
+    setCurrentIndex(pickNextIndex())
+  }, [pickNextIndex])
 
-  const prevTrack = useCallback(
-    () =>
-      setCurrentIndex((index) => (index - 1 + tracks.length) % tracks.length),
-    [tracks.length],
-  )
+  const prevTrack = useCallback(() => {
+    if (time <= 3) {
+      setCurrentIndex((index) => (index - 1 + tracks.length) % tracks.length)
+    }
+    setTime(0)
+  }, [time, tracks.length])
+
+  const toggleShuffle = useCallback(() => {
+    const next = !shuffle
+    setShuffle(next)
+    notify(next ? 'Lecture aléatoire activée' : 'Lecture aléatoire désactivée')
+  }, [shuffle, notify])
+
+  const toggleRepeat = useCallback(() => {
+    const next = !repeat
+    setRepeat(next)
+    notify(next ? 'Répétition du titre activée' : 'Répétition désactivée')
+  }, [repeat, notify])
 
   return {
     tracks,
@@ -45,8 +90,12 @@ export function usePlayer() {
     currentIndex,
     time,
     playing,
+    shuffle,
+    repeat,
     togglePlay,
     nextTrack,
     prevTrack,
+    toggleShuffle,
+    toggleRepeat,
   }
 }

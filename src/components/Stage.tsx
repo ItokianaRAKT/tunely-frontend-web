@@ -5,7 +5,11 @@ type StageProps = {
   track: Track
   index: number
   time: number
+  shuffle: boolean
+  repeat: boolean
   onTogglePlay: () => void
+  onToggleShuffle: () => void
+  onToggleRepeat: () => void
   onNext: () => void
   onPrev: () => void
 }
@@ -19,7 +23,11 @@ export function Stage({
   track,
   index,
   time,
+  shuffle,
+  repeat,
   onTogglePlay,
+  onToggleShuffle,
+  onToggleRepeat,
   onNext,
   onPrev,
 }: StageProps) {
@@ -98,7 +106,11 @@ export function Stage({
         <span>{formatTime(track.duration)}</span>
       </div>
       <div className="ctl">
-        <button aria-pressed="false" aria-label="Aléatoire">
+        <button
+          aria-pressed={shuffle}
+          aria-label="Aléatoire"
+          onClick={onToggleShuffle}
+        >
           <Icon name="shuffle" />
         </button>
         <button className="skip" aria-label="Précédent" onClick={onPrev}>
@@ -120,7 +132,11 @@ export function Stage({
         <button className="skip" aria-label="Suivant" onClick={onNext}>
           <Icon name="next" />
         </button>
-        <button aria-pressed="false" aria-label="Répéter">
+        <button
+          aria-pressed={repeat}
+          aria-label="Répéter"
+          onClick={onToggleRepeat}
+        >
           <Icon name="repeat" />
         </button>
       </div>
