@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from 'react'
 import { IconSprite } from './components/Icon'
 import { Sidebar } from './components/Sidebar'
 import { Stage } from './components/Stage'
+import { QueuePanel } from './components/QueuePanel'
 import { SEED_TRACKS } from './data/tracks'
 import './App.css'
 
@@ -94,7 +95,7 @@ function App() {
           onNext={nextTrack}
           onPrev={prevTrack}
         />
-        <div className="right qopen" id="right" />
+        <QueuePanel />
         <footer className="strip" />
       </main>
 
