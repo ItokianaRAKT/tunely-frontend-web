@@ -4,12 +4,15 @@ import { Sidebar } from './components/Sidebar'
 import { Stage } from './components/Stage'
 import { QueuePanel } from './components/QueuePanel'
 import { StatusStrip } from './components/StatusStrip'
+import { AddTrackDialog } from './components/AddTrackDialog'
 import { usePlayer } from './hooks/usePlayer'
 import './App.css'
 
 function App() {
   const [toast, setToast] = useState('')
   const [roomCode, setRoomCode] = useState('#7F3Q')
+  const [adding, setAdding] = useState(false)
+  const [queueOpen, setQueueOpen] = useState(true)
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
   )
@@ -36,6 +39,9 @@ function App() {
     toggleRepeat,
     seekTo,
     selectTrack,
+    addTrack,
+    newIndex,
+    pausePlayback,
   } = usePlayer(showToast)
 
   const handleNav = useCallback(
@@ -79,6 +85,19 @@ function App() {
     showToast(`Nouvelle Room simulée · code ${next}`)
   }, [showToast])
 
+  const handleAddTrack = useCallback(
+    (title: string, artist: string) => {
+      addTrack(title, artist)
+      setQueueOpen(true)
+    },
+    [addTrack],
+  )
+
+  const quitRoom = useCallback(() => {
+    pausePlayback()
+    showToast('Room quittée (simulation) · lecture en pause')
+  }, [pausePlayback, showToast])
+
   return (
     <>
       <IconSprite />
@@ -105,7 +124,12 @@ function App() {
         <QueuePanel
           tracks={tracks}
           currentIndex={currentIndex}
+          newIndex={newIndex}
+          open={queueOpen}
+          onToggle={() => setQueueOpen((value) => !value)}
           onPick={selectTrack}
+          onAdd={() => setAdding(true)}
+          onQuit={quitRoom}
         />
         <StatusStrip
           track={track}
@@ -113,6 +137,12 @@ function App() {
           upcoming={tracks[upcomingIndex]}
         />
       </main>
+
+      <AddTrackDialog
+        open={adding}
+        onClose={() => setAdding(false)}
+        onAdd={handleAddTrack}
+      />
 
       <div
         id="toast"

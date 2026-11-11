@@ -1,16 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { SEED_TRACKS } from '../data/tracks'
+import { GRADIENTS, SEED_TRACKS } from '../data/tracks'
 
 type Notify = (message: string) => void
 
 export function usePlayer(notify: Notify) {
-  const [tracks] = useState(SEED_TRACKS)
+  const [tracks, setTracks] = useState(SEED_TRACKS)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [playing, setPlaying] = useState(true)
   const [time, setTime] = useState(102)
   const [shuffle, setShuffle] = useState(false)
   const [repeat, setRepeat] = useState(false)
   const [shuffleTarget, setShuffleTarget] = useState<number | null>(null)
+  const [newIndex, setNewIndex] = useState<number | null>(null)
 
   const track = tracks[currentIndex]
 
@@ -77,6 +78,8 @@ export function usePlayer(notify: Notify) {
     setPlaying((value) => !value)
   }, [playing, time, track.duration])
 
+  const pausePlayback = useCallback(() => setPlaying(false), [])
+
   const nextTrack = useCallback(
     () => goToTrack(upcomingIndex),
     [goToTrack, upcomingIndex],
@@ -117,6 +120,17 @@ export function usePlayer(notify: Notify) {
     [currentIndex, goToTrack],
   )
 
+  const addTrack = useCallback(
+    (title: string, artist: string) => {
+      const duration = 180 + Math.floor(Math.random() * 121)
+      const gradient = GRADIENTS[tracks.length % GRADIENTS.length]
+      setTracks((list) => [...list, { title, artist, duration, gradient }])
+      setNewIndex(tracks.length)
+      notify(`« ${title} » ajouté à la file`)
+    },
+    [tracks.length, notify],
+  )
+
   return {
     tracks,
     track,
@@ -127,11 +141,14 @@ export function usePlayer(notify: Notify) {
     shuffle,
     repeat,
     togglePlay,
+    pausePlayback,
     nextTrack,
     prevTrack,
     toggleShuffle,
     toggleRepeat,
     seekTo,
     selectTrack,
+    addTrack,
+    newIndex,
   }
 }

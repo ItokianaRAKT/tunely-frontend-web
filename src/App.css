@@ -638,6 +638,73 @@ h2 {
   height: 30px;
 }
 
+/* dialog */
+dialog {
+  border: 1px solid rgba(242, 240, 233, 0.2);
+  background: var(--ink);
+  color: var(--chalk);
+  border-radius: 6px;
+  padding: 28px;
+  width: min(400px, calc(100vw - 32px));
+}
+
+dialog::backdrop {
+  background: rgba(17, 19, 21, 0.7);
+}
+
+dialog h4 {
+  margin: 0 0 20px;
+  font: 700 22px var(--head);
+}
+
+dialog label {
+  display: block;
+  font: 400 11px var(--mono);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--conc);
+  margin-bottom: 16px;
+}
+
+dialog input {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  color: var(--chalk);
+  padding: 12px;
+  font: 400 15px var(--ui);
+}
+
+.acts {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.btn {
+  padding: 11px 18px;
+  border-radius: 3px;
+  font-size: 13px;
+  border: 1px solid var(--line);
+}
+
+.btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.btn.p {
+  background: var(--blue);
+  border-color: var(--blue);
+}
+
+.btn.p:hover {
+  background: #3a5eff;
+}
+
 /* toast */
 #toast {
   position: fixed;
