@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react'
-import type { FormEvent } from 'react'
 
 type AddTrackDialogProps = {
   open: boolean
@@ -25,7 +24,7 @@ export function AddTrackDialog({ open, onClose, onAdd }: AddTrackDialogProps) {
     }
   }, [open])
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = () => {
     const title = titleRef.current?.value.trim()
     const artist = artistRef.current?.value.trim()
     if (!title || !artist) return

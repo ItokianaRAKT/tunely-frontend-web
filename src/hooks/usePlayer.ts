@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { GRADIENTS, SEED_TRACKS } from '../data/tracks'
 
 type Notify = (message: string) => void
@@ -44,34 +44,53 @@ export function usePlayer(notify: Notify) {
     [rollShuffleTarget],
   )
 
-  useEffect(() => {
-    if (!playing) return
-    const id = window.setInterval(() => setTime((value) => value + 0.25), 250)
-    return () => window.clearInterval(id)
-  }, [playing])
+  const latestRef = useRef({
+    time,
+    track,
+    currentIndex,
+    tracks,
+    shuffle,
+    repeat,
+    upcomingIndex,
+  })
+
+  useLayoutEffect(() => {
+    latestRef.current = {
+      time,
+      track,
+      currentIndex,
+      tracks,
+      shuffle,
+      repeat,
+      upcomingIndex,
+    }
+  })
 
   useEffect(() => {
-    if (time < track.duration) return
-    if (repeat) {
-      setTime(0)
-      return
-    }
-    if (!shuffle && currentIndex === tracks.length - 1) {
-      setTime(track.duration)
-      setPlaying(false)
-      return
-    }
-    goToTrack(upcomingIndex)
-  }, [
-    time,
-    track.duration,
-    currentIndex,
-    tracks.length,
-    repeat,
-    shuffle,
-    upcomingIndex,
-    goToTrack,
-  ])
+    if (!playing) return
+    const id = window.setInterval(() => {
+      const latest = latestRef.current
+      const nextTime = latest.time + 0.25
+      if (nextTime < latest.track.duration) {
+        setTime(nextTime)
+        return
+      }
+      if (latest.repeat) {
+        setTime(0)
+        return
+      }
+      if (
+        !latest.shuffle &&
+        latest.currentIndex === latest.tracks.length - 1
+      ) {
+        setTime(latest.track.duration)
+        setPlaying(false)
+        return
+      }
+      goToTrack(latest.upcomingIndex)
+    }, 250)
+    return () => window.clearInterval(id)
+  }, [playing, goToTrack])
 
   const togglePlay = useCallback(() => {
     if (!playing && time >= track.duration) setTime(0)
