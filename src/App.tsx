@@ -3,6 +3,7 @@ import { IconSprite } from './components/Icon'
 import { Sidebar } from './components/Sidebar'
 import { Stage } from './components/Stage'
 import { QueuePanel } from './components/QueuePanel'
+import { StatusStrip } from './components/StatusStrip'
 import { usePlayer } from './hooks/usePlayer'
 import './App.css'
 
@@ -23,6 +24,7 @@ function App() {
     tracks,
     track,
     currentIndex,
+    upcomingIndex,
     time,
     playing,
     shuffle,
@@ -105,7 +107,11 @@ function App() {
           currentIndex={currentIndex}
           onPick={selectTrack}
         />
-        <footer className="strip" />
+        <StatusStrip
+          track={track}
+          time={time}
+          upcoming={tracks[upcomingIndex]}
+        />
       </main>
 
       <div
