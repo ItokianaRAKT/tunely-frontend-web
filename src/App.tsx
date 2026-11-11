@@ -3,17 +3,12 @@ import { IconSprite } from './components/Icon'
 import { Sidebar } from './components/Sidebar'
 import { Stage } from './components/Stage'
 import { QueuePanel } from './components/QueuePanel'
-import { SEED_TRACKS } from './data/tracks'
+import { usePlayer } from './hooks/usePlayer'
 import './App.css'
 
 function App() {
   const [toast, setToast] = useState('')
   const [roomCode, setRoomCode] = useState('#7F3Q')
-  const [tracks] = useState(SEED_TRACKS)
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [playing, setPlaying] = useState(true)
-  const [time] = useState(102)
-  const track = tracks[currentIndex]
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
   )
@@ -23,6 +18,23 @@ function App() {
     clearTimeout(toastTimer.current)
     toastTimer.current = setTimeout(() => setToast(''), 2200)
   }, [])
+
+  const {
+    tracks,
+    track,
+    currentIndex,
+    time,
+    playing,
+    shuffle,
+    repeat,
+    togglePlay,
+    nextTrack,
+    prevTrack,
+    toggleShuffle,
+    toggleRepeat,
+    seekTo,
+    selectTrack,
+  } = usePlayer(showToast)
 
   const handleNav = useCallback(
     (label: string) => showToast(`${label} : non disponible dans ce prototype`),
@@ -65,18 +77,6 @@ function App() {
     showToast(`Nouvelle Room simulée · code ${next}`)
   }, [showToast])
 
-  const togglePlay = useCallback(() => setPlaying((value) => !value), [])
-
-  const nextTrack = useCallback(
-    () => setCurrentIndex((index) => (index + 1) % tracks.length),
-    [tracks.length],
-  )
-
-  const prevTrack = useCallback(
-    () => setCurrentIndex((index) => (index - 1 + tracks.length) % tracks.length),
-    [tracks.length],
-  )
-
   return (
     <>
       <IconSprite />
@@ -91,11 +91,20 @@ function App() {
           track={track}
           index={currentIndex}
           time={time}
+          shuffle={shuffle}
+          repeat={repeat}
           onTogglePlay={togglePlay}
+          onToggleShuffle={toggleShuffle}
+          onToggleRepeat={toggleRepeat}
+          onSeek={seekTo}
           onNext={nextTrack}
           onPrev={prevTrack}
         />
-        <QueuePanel tracks={tracks} currentIndex={currentIndex} />
+        <QueuePanel
+          tracks={tracks}
+          currentIndex={currentIndex}
+          onPick={selectTrack}
+        />
         <footer className="strip" />
       </main>
 
