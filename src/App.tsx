@@ -30,12 +30,8 @@ function App() {
     upcomingIndex,
     time,
     playing,
-    shuffle,
     repeat,
     togglePlay,
-    nextTrack,
-    prevTrack,
-    toggleShuffle,
     toggleRepeat,
     seekTo,
     selectTrack,
@@ -112,14 +108,10 @@ function App() {
           track={track}
           index={currentIndex}
           time={time}
-          shuffle={shuffle}
           repeat={repeat}
           onTogglePlay={togglePlay}
-          onToggleShuffle={toggleShuffle}
           onToggleRepeat={toggleRepeat}
           onSeek={seekTo}
-          onNext={nextTrack}
-          onPrev={prevTrack}
         />
         <QueuePanel
           tracks={tracks}
