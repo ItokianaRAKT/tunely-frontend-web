@@ -1,15 +1,12 @@
 import { useRef } from 'react'
 import type { KeyboardEvent, PointerEvent } from 'react'
-import { Icon } from './Icon'
 import type { Track } from '../data/tracks'
 
 type StageProps = {
   track: Track
   index: number
   time: number
-  repeat: boolean
   onTogglePlay: () => void
-  onToggleRepeat: () => void
   onSeek: (seconds: number) => void
 }
 
@@ -22,9 +19,7 @@ export function Stage({
   track,
   index,
   time,
-  repeat,
   onTogglePlay,
-  onToggleRepeat,
   onSeek,
 }: StageProps) {
   const barRef = useRef<HTMLDivElement>(null)
@@ -150,13 +145,6 @@ export function Stage({
           <svg className="pl" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M8 5v14l11-7z" />
           </svg>
-        </button>
-        <button
-          aria-pressed={repeat}
-          aria-label="Répéter"
-          onClick={onToggleRepeat}
-        >
-          <Icon name="repeat" />
         </button>
       </div>
     </section>

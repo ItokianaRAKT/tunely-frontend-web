@@ -32,9 +32,7 @@ function App() {
     upcomingIndex,
     time,
     playing,
-    repeat,
     togglePlay,
-    toggleRepeat,
     seekTo,
     addTrack,
     newIndex,
@@ -126,9 +124,7 @@ function App() {
           track={track}
           index={currentIndex}
           time={time}
-          repeat={repeat}
           onTogglePlay={togglePlay}
-          onToggleRepeat={toggleRepeat}
           onSeek={seekTo}
         />
         <QueuePanel
