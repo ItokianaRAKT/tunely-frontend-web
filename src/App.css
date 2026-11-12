@@ -150,11 +150,11 @@ nav svg {
 
 .sbrand {
   position: relative;
-  padding: 0 28px 14px;
+  padding: 0 28px 6px;
   color: var(--blue);
   font-size: 12px;
   line-height: 1.5;
-  margin-top: -6px;
+  margin-top: 0;
   background: linear-gradient(transparent, #0e1012 40%);
 }
 
