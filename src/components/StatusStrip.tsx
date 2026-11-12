@@ -10,6 +10,9 @@ type StatusStripProps = {
   time: number
   upcoming: Track
   participants: Participant[]
+  hostId: string
+  canNameHost: boolean
+  onNameHost: (id: string) => void
 }
 
 export function StatusStrip({
@@ -17,6 +20,9 @@ export function StatusStrip({
   time,
   upcoming,
   participants,
+  hostId,
+  canNameHost,
+  onNameHost,
 }: StatusStripProps) {
   const [listOpen, setListOpen] = useState(false)
   const wrapRef = useRef<HTMLDivElement>(null)
@@ -104,6 +110,18 @@ export function StatusStrip({
                 <b>{person.name}</b>
                 {person.id === YOU_ID && <small>vous</small>}
               </span>
+              {person.id === hostId ? (
+                <span className="pbadge">Hôte</span>
+              ) : (
+                canNameHost && (
+                  <button
+                    className="nominate"
+                    onClick={() => onNameHost(person.id)}
+                  >
+                    Nommer hôte
+                  </button>
+                )
+              )}
             </li>
           ))}
         </ul>

@@ -7,7 +7,7 @@ import type { Vote } from './components/QueuePanel'
 import { StatusStrip } from './components/StatusStrip'
 import { AddTrackDialog } from './components/AddTrackDialog'
 import { usePlayer } from './hooks/usePlayer'
-import { SEED_PARTICIPANTS } from './data/participants'
+import { SEED_PARTICIPANTS, YOU_ID } from './data/participants'
 import './App.css'
 
 function App() {
@@ -16,6 +16,7 @@ function App() {
   const [adding, setAdding] = useState(false)
   const [queueOpen, setQueueOpen] = useState(true)
   const [votes, setVotes] = useState<Record<number, Vote>>({})
+  const [hostId, setHostId] = useState(YOU_ID)
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
   )
@@ -111,6 +112,18 @@ function App() {
     [tracks, showToast],
   )
 
+  const canNameHost = hostId === YOU_ID
+
+  const nameHost = useCallback(
+    (id: string) => {
+      const host = SEED_PARTICIPANTS.find((person) => person.id === id)
+      if (!host || id === hostId) return
+      setHostId(id)
+      showToast(`${host.name} est désormais hôte · vous perdez ce pouvoir`)
+    },
+    [hostId, showToast],
+  )
+
   return (
     <>
       <IconSprite />
@@ -144,6 +157,9 @@ function App() {
           time={time}
           upcoming={tracks[upcomingIndex]}
           participants={SEED_PARTICIPANTS}
+          hostId={hostId}
+          canNameHost={canNameHost}
+          onNameHost={nameHost}
         />
       </main>
 
