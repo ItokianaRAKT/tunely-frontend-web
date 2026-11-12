@@ -3,6 +3,7 @@ import { IconSprite } from './components/Icon'
 import { Sidebar } from './components/Sidebar'
 import { Stage } from './components/Stage'
 import { QueuePanel } from './components/QueuePanel'
+import type { Vote } from './components/QueuePanel'
 import { StatusStrip } from './components/StatusStrip'
 import { AddTrackDialog } from './components/AddTrackDialog'
 import { usePlayer } from './hooks/usePlayer'
@@ -13,6 +14,7 @@ function App() {
   const [roomCode, setRoomCode] = useState('#7F3Q')
   const [adding, setAdding] = useState(false)
   const [queueOpen, setQueueOpen] = useState(true)
+  const [votes, setVotes] = useState<Record<number, Vote>>({})
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
   )
@@ -34,7 +36,6 @@ function App() {
     togglePlay,
     toggleRepeat,
     seekTo,
-    selectTrack,
     addTrack,
     newIndex,
     pausePlayback,
@@ -94,6 +95,23 @@ function App() {
     showToast('Room quittée (simulation) · lecture en pause')
   }, [pausePlayback, showToast])
 
+  const handleVote = useCallback(
+    (index: number, vote: Vote) => {
+      const title = tracks[index].title
+      setVotes((current) => {
+        if (current[index] === vote) {
+          showToast(`Vote retiré · ${title}`)
+          const next = { ...current }
+          delete next[index]
+          return next
+        }
+        showToast(`${vote === 'up' ? '👍' : '👎'} Vote enregistré · ${title}`)
+        return { ...current, [index]: vote }
+      })
+    },
+    [tracks, showToast],
+  )
+
   return (
     <>
       <IconSprite />
@@ -117,9 +135,10 @@ function App() {
           tracks={tracks}
           currentIndex={currentIndex}
           newIndex={newIndex}
+          votes={votes}
           open={queueOpen}
           onToggle={() => setQueueOpen((value) => !value)}
-          onPick={selectTrack}
+          onVote={handleVote}
           onAdd={() => setAdding(true)}
           onQuit={quitRoom}
         />

@@ -1,15 +1,18 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { Icon } from './Icon'
 import type { Track } from '../data/tracks'
+
+export type Vote = 'up' | 'down'
 
 type QueuePanelProps = {
   tracks: Track[]
   currentIndex: number
   newIndex: number | null
+  votes: Record<number, Vote>
   open: boolean
   onToggle: () => void
-  onPick: (index: number) => void
+  onVote: (index: number, vote: Vote) => void
   onAdd: () => void
   onQuit: () => void
 }
@@ -18,13 +21,15 @@ export function QueuePanel({
   tracks,
   currentIndex,
   newIndex,
+  votes,
   open,
   onToggle,
-  onPick,
+  onVote,
   onAdd,
   onQuit,
 }: QueuePanelProps) {
   const listRef = useRef<HTMLUListElement>(null)
+  const [voting, setVoting] = useState<number | null>(null)
 
   useEffect(() => {
     if (newIndex === null) return
@@ -71,7 +76,10 @@ export function QueuePanel({
             <button
               className="row"
               aria-current={index === currentIndex ? 'true' : undefined}
-              onClick={() => onPick(index)}
+              aria-expanded={voting === index}
+              onClick={() =>
+                setVoting((current) => (current === index ? null : index))
+              }
             >
               <span
                 className="th"
@@ -81,7 +89,7 @@ export function QueuePanel({
                 <b>{track.title}</b>
                 <small>{track.artist}</small>
               </span>
-              {index === currentIndex && (
+              {index === currentIndex && voting !== index && (
                 <span className="eq" aria-label="En cours">
                   <s />
                   <s />
@@ -89,6 +97,26 @@ export function QueuePanel({
                 </span>
               )}
             </button>
+            {voting === index && (
+              <span className="vote">
+                <button
+                  className="like"
+                  aria-label={`Voter pour ${track.title}`}
+                  aria-pressed={votes[index] === 'up'}
+                  onClick={() => onVote(index, 'up')}
+                >
+                  <Icon name="like" />
+                </button>
+                <button
+                  className="dislike"
+                  aria-label={`Voter contre ${track.title}`}
+                  aria-pressed={votes[index] === 'down'}
+                  onClick={() => onVote(index, 'down')}
+                >
+                  <Icon name="dislike" />
+                </button>
+              </span>
+            )}
           </li>
         ))}
       </ul>

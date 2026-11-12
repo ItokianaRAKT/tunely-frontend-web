@@ -72,14 +72,6 @@ export function usePlayer(notify: Notify) {
     [track.duration],
   )
 
-  const selectTrack = useCallback(
-    (index: number) => {
-      if (index !== currentIndex) goToTrack(index)
-      setPlaying(true)
-    },
-    [currentIndex, goToTrack],
-  )
-
   const addTrack = useCallback(
     (title: string, artist: string) => {
       const duration = 180 + Math.floor(Math.random() * 121)
@@ -103,7 +95,6 @@ export function usePlayer(notify: Notify) {
     pausePlayback,
     toggleRepeat,
     seekTo,
-    selectTrack,
     addTrack,
     newIndex,
   }

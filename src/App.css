@@ -522,6 +522,56 @@ h2 {
   animation: none;
 }
 
+.ql li {
+  position: relative;
+}
+
+.vote {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  z-index: 1;
+}
+
+.vote button {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--conc);
+  transition:
+    background 0.16s,
+    color 0.16s;
+}
+
+.vote button:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--chalk);
+}
+
+.vote button[aria-pressed='true'].like {
+  color: var(--blue);
+  background: rgba(36, 76, 255, 0.2);
+}
+
+.vote button[aria-pressed='true'].dislike {
+  color: var(--chalk);
+  background: rgba(242, 240, 233, 0.16);
+}
+
+.vote svg {
+  width: 15px;
+  height: 15px;
+}
+
 @keyframes eq {
   to {
     transform: scaleY(0.35);
