@@ -7,14 +7,10 @@ type StageProps = {
   track: Track
   index: number
   time: number
-  shuffle: boolean
   repeat: boolean
   onTogglePlay: () => void
-  onToggleShuffle: () => void
   onToggleRepeat: () => void
   onSeek: (seconds: number) => void
-  onNext: () => void
-  onPrev: () => void
 }
 
 function formatTime(seconds: number) {
@@ -26,14 +22,10 @@ export function Stage({
   track,
   index,
   time,
-  shuffle,
   repeat,
   onTogglePlay,
-  onToggleShuffle,
   onToggleRepeat,
   onSeek,
-  onNext,
-  onPrev,
 }: StageProps) {
   const barRef = useRef<HTMLDivElement>(null)
   const progress = Math.min(1, time / track.duration) * 100
@@ -147,16 +139,6 @@ export function Stage({
       </div>
       <div className="ctl">
         <button
-          aria-pressed={shuffle}
-          aria-label="Aléatoire"
-          onClick={onToggleShuffle}
-        >
-          <Icon name="shuffle" />
-        </button>
-        <button className="skip" aria-label="Précédent" onClick={onPrev}>
-          <Icon name="prev" />
-        </button>
-        <button
           className="pp"
           aria-label="Lecture / pause"
           onClick={onTogglePlay}
@@ -168,9 +150,6 @@ export function Stage({
           <svg className="pl" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M8 5v14l11-7z" />
           </svg>
-        </button>
-        <button className="skip" aria-label="Suivant" onClick={onNext}>
-          <Icon name="next" />
         </button>
         <button
           aria-pressed={repeat}

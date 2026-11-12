@@ -8,62 +8,26 @@ export function usePlayer(notify: Notify) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [playing, setPlaying] = useState(true)
   const [time, setTime] = useState(102)
-  const [shuffle, setShuffle] = useState(false)
   const [repeat, setRepeat] = useState(false)
-  const [shuffleTarget, setShuffleTarget] = useState<number | null>(null)
   const [newIndex, setNewIndex] = useState<number | null>(null)
 
   const track = tracks[currentIndex]
 
-  const rollShuffleTarget = useCallback(
-    (from: number) => {
-      const count = tracks.length
-      if (count < 2) return from
-      let candidate = from
-      while (candidate === from) {
-        candidate = Math.floor(Math.random() * count)
-      }
-      return candidate
-    },
-    [tracks.length],
-  )
-
   const upcomingIndex = useMemo(() => {
     const count = tracks.length
     if (count < 2) return currentIndex
-    if (shuffle) return shuffleTarget ?? currentIndex
     return (currentIndex + 1) % count
-  }, [tracks.length, shuffle, shuffleTarget, currentIndex])
+  }, [tracks.length, currentIndex])
 
-  const goToTrack = useCallback(
-    (index: number) => {
-      setCurrentIndex(index)
-      setTime(0)
-      setShuffleTarget(rollShuffleTarget(index))
-    },
-    [rollShuffleTarget],
-  )
+  const goToTrack = useCallback((index: number) => {
+    setCurrentIndex(index)
+    setTime(0)
+  }, [])
 
-  const latestRef = useRef({
-    time,
-    track,
-    currentIndex,
-    tracks,
-    shuffle,
-    repeat,
-    upcomingIndex,
-  })
+  const latestRef = useRef({ time, track, currentIndex, tracks, repeat, upcomingIndex })
 
   useLayoutEffect(() => {
-    latestRef.current = {
-      time,
-      track,
-      currentIndex,
-      tracks,
-      shuffle,
-      repeat,
-      upcomingIndex,
-    }
+    latestRef.current = { time, track, currentIndex, tracks, repeat, upcomingIndex }
   })
 
   useEffect(() => {
@@ -79,10 +43,7 @@ export function usePlayer(notify: Notify) {
         setTime(0)
         return
       }
-      if (
-        !latest.shuffle &&
-        latest.currentIndex === latest.tracks.length - 1
-      ) {
+      if (latest.currentIndex === latest.tracks.length - 1) {
         setTime(latest.track.duration)
         setPlaying(false)
         return
@@ -98,26 +59,6 @@ export function usePlayer(notify: Notify) {
   }, [playing, time, track.duration])
 
   const pausePlayback = useCallback(() => setPlaying(false), [])
-
-  const nextTrack = useCallback(
-    () => goToTrack(upcomingIndex),
-    [goToTrack, upcomingIndex],
-  )
-
-  const prevTrack = useCallback(() => {
-    if (time > 3) {
-      setTime(0)
-      return
-    }
-    goToTrack((currentIndex - 1 + tracks.length) % tracks.length)
-  }, [time, currentIndex, tracks.length, goToTrack])
-
-  const toggleShuffle = useCallback(() => {
-    const next = !shuffle
-    setShuffle(next)
-    setShuffleTarget(next ? rollShuffleTarget(currentIndex) : null)
-    notify(next ? 'Lecture aléatoire activée' : 'Lecture aléatoire désactivée')
-  }, [shuffle, currentIndex, rollShuffleTarget, notify])
 
   const toggleRepeat = useCallback(() => {
     const next = !repeat
@@ -157,13 +98,9 @@ export function usePlayer(notify: Notify) {
     upcomingIndex,
     time,
     playing,
-    shuffle,
     repeat,
     togglePlay,
     pausePlayback,
-    nextTrack,
-    prevTrack,
-    toggleShuffle,
     toggleRepeat,
     seekTo,
     selectTrack,

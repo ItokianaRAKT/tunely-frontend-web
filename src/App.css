@@ -314,10 +314,6 @@ h2 {
   height: 22px;
 }
 
-.ctl .skip svg {
-  fill: currentColor;
-}
-
 .ctl .pp {
   width: 56px;
   height: 56px;
@@ -789,8 +785,7 @@ dialog input {
     margin-bottom: 24px;
   }
   .ctl {
-    gap: 0;
-    justify-content: space-between;
+    gap: 44px;
   }
   .ctl .pp {
     width: 64px;
