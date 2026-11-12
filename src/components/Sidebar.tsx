@@ -25,7 +25,6 @@ export function Sidebar({ code, onCopy, onCreate, onNav }: SidebarProps) {
     <aside className="side">
       <div className="wm">TUNELY.</div>
       <div className="room">
-        <Icon name="logo" className="mk" style={{ width: 24, height: 20 }} />
         <div>
           <b>Ma Room</b>
           <button
