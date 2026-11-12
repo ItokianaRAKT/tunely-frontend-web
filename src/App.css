@@ -665,7 +665,7 @@ h2 {
   color: var(--chalk);
 }
 
-.av span:last-child {
+.av .more {
   margin: 0 0 0 14px;
   background: rgba(255, 255, 255, 0.08);
   border: 0;
@@ -673,6 +673,103 @@ h2 {
   padding: 0 12px;
   border-radius: 18px;
   height: 30px;
+}
+
+.av:focus-visible {
+  border-radius: 20px;
+  outline-offset: 6px;
+}
+
+.ppl {
+  position: relative;
+}
+
+.plist {
+  position: absolute;
+  left: 28px;
+  bottom: calc(100% + 14px);
+  width: 252px;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: var(--ink);
+  border: 1px solid rgba(242, 240, 233, 0.18);
+  border-radius: 6px;
+  box-shadow: 0 20px 44px rgba(0, 0, 0, 0.5);
+  z-index: 6;
+}
+
+.plist li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 8px;
+  border-radius: 4px;
+  font-size: 12.5px;
+}
+
+.plist li:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.pi {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font: 500 10.5px var(--head);
+  background: var(--c);
+  color: var(--chalk);
+}
+
+.pn {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.pn b {
+  font: 500 12.5px var(--ui);
+}
+
+.pn small {
+  font: 400 10.5px var(--mono);
+  color: var(--conc);
+}
+
+.pbadge {
+  flex: none;
+  font: 400 9.5px var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #93a6ff;
+  background: rgba(36, 76, 255, 0.18);
+  border: 1px solid rgba(36, 76, 255, 0.55);
+  border-radius: 10px;
+  padding: 3px 7px;
+}
+
+.nominate {
+  flex: none;
+  font-size: 10.5px;
+  color: var(--conc);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 4px 8px;
+  transition:
+    background 0.16s,
+    color 0.16s,
+    border-color 0.16s;
+}
+
+.nominate:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(242, 240, 233, 0.4);
+  color: var(--chalk);
 }
 
 /* dialog */
@@ -887,6 +984,9 @@ dialog input {
   }
   .strip > div {
     padding: 18px 20px;
+  }
+  .plist {
+    left: 20px;
   }
 }
 
