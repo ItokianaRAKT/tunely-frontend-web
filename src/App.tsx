@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react'
-import { IconSprite } from './components/Icon'
+import { Icon, IconSprite } from './components/Icon'
+import type { IconName } from './components/Icon'
 import { Sidebar } from './components/Sidebar'
 import { Stage } from './components/Stage'
 import { QueuePanel } from './components/QueuePanel'
@@ -10,8 +11,10 @@ import { usePlayer } from './hooks/usePlayer'
 import { SEED_PARTICIPANTS, YOU_ID } from './data/participants'
 import './App.css'
 
+type Toast = { text: string; icon?: IconName }
+
 function App() {
-  const [toast, setToast] = useState('')
+  const [toast, setToast] = useState<Toast | null>(null)
   const [roomCode, setRoomCode] = useState('#7F3Q')
   const [adding, setAdding] = useState(false)
   const [queueOpen, setQueueOpen] = useState(true)
@@ -21,10 +24,10 @@ function App() {
     undefined,
   )
 
-  const showToast = useCallback((message: string) => {
-    setToast(message)
+  const showToast = useCallback((message: string, icon?: IconName) => {
+    setToast(icon ? { text: message, icon } : { text: message })
     clearTimeout(toastTimer.current)
-    toastTimer.current = setTimeout(() => setToast(''), 2200)
+    toastTimer.current = setTimeout(() => setToast(null), 2200)
   }, [])
 
   const {
@@ -175,7 +178,13 @@ function App() {
         role="status"
         aria-live="polite"
       >
-        {toast}
+        {toast?.icon && (
+          <Icon
+            name={toast.icon}
+            className={toast.icon === 'like' ? 'up' : undefined}
+          />
+        )}
+        {toast?.text}
       </div>
     </>
   )
