@@ -1,14 +1,35 @@
+import { useEffect, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { Icon } from './Icon'
 import type { Track } from '../data/tracks'
+import type { Participant } from '../data/participants'
+import { YOU_ID } from '../data/participants'
 
 type StatusStripProps = {
   track: Track
   time: number
   upcoming: Track
+  participants: Participant[]
 }
 
-export function StatusStrip({ track, time, upcoming }: StatusStripProps) {
+export function StatusStrip({
+  track,
+  time,
+  upcoming,
+  participants,
+}: StatusStripProps) {
+  const [listOpen, setListOpen] = useState(false)
+  const wrapRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!listOpen) return
+    const closeOnOutside = (event: PointerEvent) => {
+      if (!wrapRef.current?.contains(event.target as Node)) setListOpen(false)
+    }
+    document.addEventListener('pointerdown', closeOnOutside)
+    return () => document.removeEventListener('pointerdown', closeOnOutside)
+  }, [listOpen])
+
   const minutes = Math.ceil((track.duration - time) / 60)
   const eta = minutes <= 0 ? 'bientôt' : `dans ${minutes} min`
 
@@ -49,14 +70,43 @@ export function StatusStrip({ track, time, upcoming }: StatusStripProps) {
           Une playlist construite ensemble.
         </p>
       </div>
-      <div>
+      <div className="ppl" ref={wrapRef}>
         <h3>Les participants</h3>
-        <div className="av" aria-label="Participants (exemples illustratifs)">
-          <span style={{ '--c': '#3b3d40' } as CSSProperties}>AM</span>
-          <span style={{ '--c': '#244CFF' } as CSSProperties}>LR</span>
-          <span style={{ '--c': '#6a6b6d' } as CSSProperties}>NT</span>
-          <span>+1</span>
-        </div>
+        <button
+          className="av"
+          aria-expanded={listOpen}
+          aria-controls="plist"
+          aria-label="Voir la liste des participants"
+          onClick={() => setListOpen((value) => !value)}
+        >
+          {participants.slice(0, 3).map((person) => (
+            <span
+              key={person.id}
+              style={{ '--c': person.color } as CSSProperties}
+            >
+              {person.initials}
+            </span>
+          ))}
+          {participants.length > 3 && (
+            <span className="more">+{participants.length - 3}</span>
+          )}
+        </button>
+        <ul className="plist" id="plist" hidden={!listOpen}>
+          {participants.map((person) => (
+            <li key={person.id}>
+              <span
+                className="pi"
+                style={{ '--c': person.color } as CSSProperties}
+              >
+                {person.initials}
+              </span>
+              <span className="pn">
+                <b>{person.name}</b>
+                {person.id === YOU_ID && <small>vous</small>}
+              </span>
+            </li>
+          ))}
+        </ul>
       </div>
     </footer>
   )

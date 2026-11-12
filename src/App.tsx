@@ -7,6 +7,7 @@ import type { Vote } from './components/QueuePanel'
 import { StatusStrip } from './components/StatusStrip'
 import { AddTrackDialog } from './components/AddTrackDialog'
 import { usePlayer } from './hooks/usePlayer'
+import { SEED_PARTICIPANTS } from './data/participants'
 import './App.css'
 
 function App() {
@@ -142,6 +143,7 @@ function App() {
           track={track}
           time={time}
           upcoming={tracks[upcomingIndex]}
+          participants={SEED_PARTICIPANTS}
         />
       </main>
 
