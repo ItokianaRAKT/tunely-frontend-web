@@ -108,7 +108,10 @@ function App() {
           delete next[index]
           return next
         }
-        showToast(`${vote === 'up' ? '👍' : '👎'} Vote enregistré · ${title}`)
+        showToast(
+          `Vote enregistré · ${title}`,
+          vote === 'up' ? 'like' : 'dislike',
+        )
         return { ...current, [index]: vote }
       })
     },
