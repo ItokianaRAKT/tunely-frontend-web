@@ -8,7 +8,6 @@ export function usePlayer(notify: Notify) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [playing, setPlaying] = useState(true)
   const [time, setTime] = useState(102)
-  const [repeat, setRepeat] = useState(false)
   const [newIndex, setNewIndex] = useState<number | null>(null)
 
   const track = tracks[currentIndex]
@@ -24,10 +23,10 @@ export function usePlayer(notify: Notify) {
     setTime(0)
   }, [])
 
-  const latestRef = useRef({ time, track, currentIndex, tracks, repeat, upcomingIndex })
+  const latestRef = useRef({ time, track, currentIndex, tracks, upcomingIndex })
 
   useLayoutEffect(() => {
-    latestRef.current = { time, track, currentIndex, tracks, repeat, upcomingIndex }
+    latestRef.current = { time, track, currentIndex, tracks, upcomingIndex }
   })
 
   useEffect(() => {
@@ -37,10 +36,6 @@ export function usePlayer(notify: Notify) {
       const nextTime = latest.time + 0.25
       if (nextTime < latest.track.duration) {
         setTime(nextTime)
-        return
-      }
-      if (latest.repeat) {
-        setTime(0)
         return
       }
       if (latest.currentIndex === latest.tracks.length - 1) {
@@ -59,12 +54,6 @@ export function usePlayer(notify: Notify) {
   }, [playing, time, track.duration])
 
   const pausePlayback = useCallback(() => setPlaying(false), [])
-
-  const toggleRepeat = useCallback(() => {
-    const next = !repeat
-    setRepeat(next)
-    notify(next ? 'Répétition du titre activée' : 'Répétition désactivée')
-  }, [repeat, notify])
 
   const seekTo = useCallback(
     (seconds: number) =>
@@ -90,10 +79,8 @@ export function usePlayer(notify: Notify) {
     upcomingIndex,
     time,
     playing,
-    repeat,
     togglePlay,
     pausePlayback,
-    toggleRepeat,
     seekTo,
     addTrack,
     newIndex,

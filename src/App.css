@@ -304,11 +304,6 @@ h2 {
   background: rgba(255, 255, 255, 0.1);
 }
 
-.ctl button[aria-pressed='true'] {
-  color: #6f8bff;
-  background: rgba(36, 76, 255, 0.2);
-}
-
 .ctl svg {
   width: 22px;
   height: 22px;
