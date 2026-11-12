@@ -81,10 +81,6 @@ svg.i {
   align-items: center;
 }
 
-.room .mk {
-  color: var(--blue);
-}
-
 .room b {
   font: 500 13px var(--ui);
   display: block;
