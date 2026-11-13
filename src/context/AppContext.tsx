@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react'
 import type { ReactNode } from 'react'
 import { SEED_PARTICIPANTS, YOU_ID } from '../data/participants'
 import type { Participant } from '../data/participants'
+import { SEED_TRACKS } from '../data/tracks'
 import { AppContext } from './app-context'
 import type { Room, Screen, User } from './app-context'
 
@@ -62,6 +63,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       hostId: YOU_ID,
       ownerId: YOU_ID,
       participants: participantsFor(user),
+      initialTracks: [],
     })
     setScreen('room-host')
   }, [user])
@@ -75,6 +77,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         hostId: mode === 'host' ? YOU_ID : SEED_PARTICIPANTS[0].id,
         ownerId: mode === 'host' ? YOU_ID : SEED_PARTICIPANTS[0].id,
         participants: participantsFor(user),
+        initialTracks: SEED_TRACKS,
       })
       setScreen(mode === 'host' ? 'room-host' : 'room-guest')
     },

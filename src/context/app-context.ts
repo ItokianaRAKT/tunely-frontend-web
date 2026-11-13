@@ -1,5 +1,6 @@
 import { createContext, useContext } from 'react'
 import type { Participant } from '../data/participants'
+import type { Track } from '../data/tracks'
 
 export type Screen = 'login' | 'home' | 'room-host' | 'room-guest'
 
@@ -15,6 +16,7 @@ export type Room = {
   hostId: string
   ownerId: string
   participants: Participant[]
+  initialTracks: Track[]
 }
 
 export type AppContextValue = {
