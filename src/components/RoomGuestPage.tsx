@@ -7,11 +7,13 @@ import type { Vote } from './QueuePanel'
 import { StatusStrip } from './StatusStrip'
 import { usePlayer } from '../hooks/usePlayer'
 import { SEED_PARTICIPANTS, YOU_ID } from '../data/participants'
+import { SEED_TRACKS } from '../data/tracks'
 import { useApp } from '../context/app-context'
 
 export function RoomGuestPage() {
   const { room, leaveRoom, dissolveRoom, setHost } = useApp()
   const participants = room?.participants ?? SEED_PARTICIPANTS
+  const initialTracks = room?.initialTracks ?? SEED_TRACKS
   const [toast, setToast] = useState<{ text: string; icon?: IconName } | null>(null)
   const [queueOpen, setQueueOpen] = useState(true)
   const [votes, setVotes] = useState<Record<number, Vote>>({})
@@ -35,7 +37,7 @@ export function RoomGuestPage() {
     seekTo,
     newIndex,
     pausePlayback,
-  } = usePlayer(showToast)
+  } = usePlayer(showToast, initialTracks)
 
   const handleNav = useCallback(
     (label: string) => {
