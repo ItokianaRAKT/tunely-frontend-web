@@ -3,6 +3,7 @@ import { IconSprite } from './components/Icon'
 import { LoginPage } from './components/LoginPage'
 import { HomePage } from './components/HomePage'
 import { RoomHostPage } from './components/RoomHostPage'
+import { RoomGuestPage } from './components/RoomGuestPage'
 import './App.css'
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
         <HomePage />
       </>
     )
+  if (screen === 'room-guest') return <RoomGuestPage />
   return <RoomHostPage />
 }
 
