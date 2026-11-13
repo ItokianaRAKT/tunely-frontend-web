@@ -6,9 +6,9 @@ import type { Participant } from '../data/participants'
 import { YOU_ID } from '../data/participants'
 
 type StatusStripProps = {
-  track: Track
+  track?: Track
   time: number
-  upcoming: Track
+  upcoming?: Track
   participants: Participant[]
   hostId: string
   canNameHost: boolean
@@ -36,10 +36,14 @@ export function StatusStrip({
     return () => document.removeEventListener('pointerdown', closeOnOutside)
   }, [listOpen])
 
-  const minutes = Math.ceil((track.duration - time) / 60)
-  const eta = minutes <= 0 ? 'bientôt' : `dans ${minutes} min`
+  const minutes = track ? Math.ceil((track.duration - time) / 60) : 0
+  const eta = !track
+    ? ''
+    : minutes <= 0
+      ? 'bientôt'
+      : `dans ${minutes} min`
 
-  const progress = Math.min(1, time / track.duration) * 100
+  const progress = track ? Math.min(1, time / track.duration) * 100 : 0
   const cx = 20 + (140 * progress) / 100
   const phase = time * 3
   const points: string[] = ['M0 22']
@@ -55,15 +59,28 @@ export function StatusStrip({
       <div>
         <h3>Prochaine lecture</h3>
         <div className="nx">
-          <span
-            className="th"
-            style={{ '--g': upcoming.gradient } as CSSProperties}
-          />
-          <div className="meta">
-            <b>{upcoming.title}</b>
-            <small>{upcoming.artist}</small>
-          </div>
-          <time>{eta}</time>
+          {upcoming ? (
+            <>
+              <span
+                className="th"
+                style={{ '--g': upcoming.gradient } as CSSProperties}
+              />
+              <div className="meta">
+                <b>{upcoming.title}</b>
+                <small>{upcoming.artist}</small>
+              </div>
+              <time>{eta}</time>
+            </>
+          ) : (
+            <div className="meta">
+              <b>{track ? 'Dernier titre' : 'File vide'}</b>
+              <small>
+                {track
+                  ? 'Aucune suite dans la file'
+                  : 'Ajoutez un titre pour compléter la playlist'}
+              </small>
+            </div>
+          )}
         </div>
       </div>
       <div className="wave" aria-hidden="true">

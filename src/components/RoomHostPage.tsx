@@ -8,15 +8,17 @@ import { StatusStrip } from './StatusStrip'
 import { AddTrackDialog } from './AddTrackDialog'
 import { usePlayer } from '../hooks/usePlayer'
 import { SEED_PARTICIPANTS, YOU_ID } from '../data/participants'
+import { SEED_TRACKS } from '../data/tracks'
 import { useApp } from '../context/app-context'
 
 export function RoomHostPage() {
   const { room, createRoom, leaveRoom, dissolveRoom, setHost } = useApp()
   const participants = room?.participants ?? SEED_PARTICIPANTS
+  const initialTracks = room?.initialTracks ?? SEED_TRACKS
   const [toast, setToast] = useState<{ text: string; icon?: IconName } | null>(null)
   const [adding, setAdding] = useState(false)
   const [queueOpen, setQueueOpen] = useState(true)
-  const [votes, setVotes] = useState<Record<number, Vote>>({})
+  const [votes, setVotes] = useState<Record<string, Vote>>({})
   const [hostId, setHostId] = useState(room?.hostId ?? YOU_ID)
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
@@ -38,7 +40,7 @@ export function RoomHostPage() {
     addTrack,
     newIndex,
     pausePlayback,
-  } = usePlayer(showToast)
+  } = usePlayer(showToast, initialTracks)
 
   const handleNav = useCallback(
     (label: string) => {
@@ -95,19 +97,20 @@ export function RoomHostPage() {
 
   const handleVote = useCallback(
     (index: number, vote: Vote) => {
-      const title = tracks[index].title
+      const title = tracks[index]?.title
+      if (!title) return
       setVotes((current) => {
-        if (current[index] === vote) {
+        if (current[title] === vote) {
           showToast(`Vote retiré · ${title}`)
           const next = { ...current }
-          delete next[index]
+          delete next[title]
           return next
         }
         showToast(
           `Vote enregistré · ${title}`,
           vote === 'up' ? 'like' : 'dislike',
         )
-        return { ...current, [index]: vote }
+        return { ...current, [title]: vote }
       })
     },
     [tracks, showToast],

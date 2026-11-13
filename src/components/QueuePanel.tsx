@@ -9,7 +9,7 @@ type QueuePanelProps = {
   tracks: Track[]
   currentIndex: number
   newIndex: number | null
-  votes: Record<number, Vote>
+  votes: Record<string, Vote>
   canAdd?: boolean
   open: boolean
   onToggle: () => void
@@ -32,6 +32,11 @@ export function QueuePanel({
 }: QueuePanelProps) {
   const listRef = useRef<HTMLUListElement>(null)
   const [voting, setVoting] = useState<number | null>(null)
+  const [prevCount, setPrevCount] = useState(tracks.length)
+  if (prevCount !== tracks.length) {
+    setPrevCount(tracks.length)
+    setVoting(null)
+  }
 
   useEffect(() => {
     if (newIndex === null) return
@@ -72,6 +77,9 @@ export function QueuePanel({
         )}
       </div>
       <ul className="ql" id="ql" ref={listRef}>
+        {tracks.length === 0 && (
+          <li className="qempty">File vide · ajoutez un titre pour commencer</li>
+        )}
         {tracks.map((track, index) => (
           <li
             key={index}
@@ -106,7 +114,7 @@ export function QueuePanel({
                 <button
                   className="like"
                   aria-label={`Voter pour ${track.title}`}
-                  aria-pressed={votes[index] === 'up'}
+                  aria-pressed={votes[track.title] === 'up'}
                   onClick={() => onVote(index, 'up')}
                 >
                   <Icon name="like" />
@@ -114,7 +122,7 @@ export function QueuePanel({
                 <button
                   className="dislike"
                   aria-label={`Voter contre ${track.title}`}
-                  aria-pressed={votes[index] === 'down'}
+                  aria-pressed={votes[track.title] === 'down'}
                   onClick={() => onVote(index, 'down')}
                 >
                   <Icon name="dislike" />

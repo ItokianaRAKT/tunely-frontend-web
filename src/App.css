@@ -475,6 +475,12 @@ h2 {
   border-bottom: 1px solid var(--line);
 }
 
+.ql .qempty {
+  padding: 20px 24px;
+  font-size: 12.5px;
+  color: var(--conc);
+}
+
 .row {
   display: flex;
   gap: 16px;
