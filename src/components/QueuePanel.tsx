@@ -72,6 +72,9 @@ export function QueuePanel({
         )}
       </div>
       <ul className="ql" id="ql" ref={listRef}>
+        {tracks.length === 0 && (
+          <li className="qempty">File vide · ajoutez un titre pour commencer</li>
+        )}
         {tracks.map((track, index) => (
           <li
             key={index}

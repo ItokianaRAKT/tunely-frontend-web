@@ -4,7 +4,7 @@ import { Icon } from './Icon'
 import type { Track } from '../data/tracks'
 
 type StageProps = {
-  track: Track
+  track?: Track
   index: number
   time: number
   readOnly?: boolean
@@ -28,10 +28,10 @@ export function Stage({
   onSeek,
 }: StageProps) {
   const barRef = useRef<HTMLDivElement>(null)
-  const progress = Math.min(1, time / track.duration) * 100
+  const progress = track ? Math.min(1, time / track.duration) * 100 : 0
 
   const seekFromPointer = (clientX: number) => {
-    if (readOnly) return
+    if (readOnly || !track) return
     const rect = barRef.current?.getBoundingClientRect()
     if (!rect) return
     const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width))
@@ -52,7 +52,7 @@ export function Stage({
   }
 
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (readOnly) return
+    if (readOnly || !track) return
     const deltas: Record<string, number> = {
       ArrowRight: 5,
       ArrowLeft: -5,
@@ -118,7 +118,7 @@ export function Stage({
       </svg>
       <div className="kick">
         <i />
-        EN COURS
+        {track ? 'EN COURS' : 'EN ATTENTE'}
       </div>
       {banner && (
         <p className="guest-tag">
@@ -126,47 +126,56 @@ export function Stage({
           {banner}
         </p>
       )}
-      <h1>{track.artist}</h1>
-      <h2>{track.title}</h2>
-      <div
-        className="bar"
-        ref={barRef}
-        role="slider"
-        tabIndex={readOnly ? -1 : 0}
-        aria-label="Progression"
-        aria-readonly={readOnly}
-        aria-valuemin={0}
-        aria-valuemax={track.duration}
-        aria-valuenow={Math.floor(time)}
-        aria-valuetext={`${formatTime(time)} sur ${formatTime(track.duration)}`}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onKeyDown={handleKeyDown}
-      >
-        <div className="tr" />
-        <div className="fl" style={{ width: `${progress}%` }} />
-        <div className="kn" style={{ left: `${progress}%` }} />
-      </div>
-      <div className="times">
-        <span>{formatTime(time)}</span>
-        <span>{formatTime(track.duration)}</span>
-      </div>
-      {!readOnly && (
-        <div className="ctl">
-          <button
-            className="pp"
-            aria-label="Lecture / pause"
-            onClick={onTogglePlay}
+      {track ? (
+        <>
+          <h1>{track.artist}</h1>
+          <h2>{track.title}</h2>
+          <div
+            className="bar"
+            ref={barRef}
+            role="slider"
+            tabIndex={readOnly ? -1 : 0}
+            aria-label="Progression"
+            aria-readonly={readOnly}
+            aria-valuemin={0}
+            aria-valuemax={track.duration}
+            aria-valuenow={Math.floor(time)}
+            aria-valuetext={`${formatTime(time)} sur ${formatTime(track.duration)}`}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onKeyDown={handleKeyDown}
           >
-            <svg className="ps" viewBox="0 0 24 24" aria-hidden="true">
-              <rect x="6" y="4" width="4" height="16" />
-              <rect x="14" y="4" width="4" height="16" />
-            </svg>
-            <svg className="pl" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M8 5v14l11-7z" />
-            </svg>
-          </button>
-        </div>
+            <div className="tr" />
+            <div className="fl" style={{ width: `${progress}%` }} />
+            <div className="kn" style={{ left: `${progress}%` }} />
+          </div>
+          <div className="times">
+            <span>{formatTime(time)}</span>
+            <span>{formatTime(track.duration)}</span>
+          </div>
+          {!readOnly && (
+            <div className="ctl">
+              <button
+                className="pp"
+                aria-label="Lecture / pause"
+                onClick={onTogglePlay}
+              >
+                <svg className="ps" viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="6" y="4" width="4" height="16" />
+                  <rect x="14" y="4" width="4" height="16" />
+                </svg>
+                <svg className="pl" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </button>
+            </div>
+          )}
+        </>
+      ) : (
+        <>
+          <h1>Rien en cours</h1>
+          <h2>Ajoutez un titre à la file pour lancer la session</h2>
+        </>
       )}
     </section>
   )
