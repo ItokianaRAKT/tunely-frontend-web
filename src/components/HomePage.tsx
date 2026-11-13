@@ -30,7 +30,6 @@ export function HomePage() {
     <div className="home">
       <header className="home-head">
         <div className="home-greeting">
-          <Icon name="logo" style={{ width: 28, height: 22 }} />
           <div>
             <h1>Bonjour, <b>{user?.name}</b></h1>
             <p>Prêt à écouter ensemble ?</p>
