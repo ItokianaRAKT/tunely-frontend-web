@@ -216,6 +216,33 @@ nav svg {
   box-shadow: none;
 }
 
+.guest-tag {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 16px;
+  padding: 6px 12px;
+  border: 1px solid rgba(36, 76, 255, 0.5);
+  background: rgba(36, 76, 255, 0.12);
+  border-radius: 3px;
+  font: 400 12px var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--chalk);
+}
+
+.guest-tag svg {
+  width: 14px;
+  height: 14px;
+  color: var(--blue);
+}
+
+.stage.ro .bar {
+  cursor: default;
+  touch-action: auto;
+}
+
 h1 {
   font: 700 clamp(34px, 4.6vw, 54px) / 1.02 var(--head);
   letter-spacing: -0.025em;
