@@ -1195,11 +1195,6 @@ dialog input {
   min-width: 0;
 }
 
-.home-greeting > svg {
-  margin-top: 8px;
-  color: var(--blue);
-}
-
 .home-greeting h1 {
   font: 700 clamp(26px, 3vw, 34px) / 1.1 var(--head);
   letter-spacing: -0.02em;
