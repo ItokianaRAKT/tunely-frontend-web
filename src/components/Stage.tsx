@@ -1,11 +1,14 @@
 import { useRef } from 'react'
 import type { KeyboardEvent, PointerEvent } from 'react'
+import { Icon } from './Icon'
 import type { Track } from '../data/tracks'
 
 type StageProps = {
   track: Track
   index: number
   time: number
+  readOnly?: boolean
+  banner?: string
   onTogglePlay: () => void
   onSeek: (seconds: number) => void
 }
@@ -19,6 +22,8 @@ export function Stage({
   track,
   index,
   time,
+  readOnly = false,
+  banner,
   onTogglePlay,
   onSeek,
 }: StageProps) {
@@ -26,6 +31,7 @@ export function Stage({
   const progress = Math.min(1, time / track.duration) * 100
 
   const seekFromPointer = (clientX: number) => {
+    if (readOnly) return
     const rect = barRef.current?.getBoundingClientRect()
     if (!rect) return
     const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width))
@@ -33,17 +39,20 @@ export function Stage({
   }
 
   const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
+    if (readOnly) return
     event.currentTarget.setPointerCapture(event.pointerId)
     seekFromPointer(event.clientX)
   }
 
   const handlePointerMove = (event: PointerEvent<HTMLDivElement>) => {
+    if (readOnly) return
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       seekFromPointer(event.clientX)
     }
   }
 
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (readOnly) return
     const deltas: Record<string, number> = {
       ArrowRight: 5,
       ArrowLeft: -5,
@@ -57,7 +66,10 @@ export function Stage({
   }
 
   return (
-    <section className="stage" aria-label="En cours de lecture">
+    <section
+      className={readOnly ? 'stage ro' : 'stage'}
+      aria-label="En cours de lecture"
+    >
       <svg
         className="art"
         viewBox="0 0 800 520"
@@ -108,14 +120,21 @@ export function Stage({
         <i />
         EN COURS
       </div>
+      {banner && (
+        <p className="guest-tag">
+          <Icon name="users" />
+          {banner}
+        </p>
+      )}
       <h1>{track.artist}</h1>
       <h2>{track.title}</h2>
       <div
         className="bar"
         ref={barRef}
         role="slider"
-        tabIndex={0}
+        tabIndex={readOnly ? -1 : 0}
         aria-label="Progression"
+        aria-readonly={readOnly}
         aria-valuemin={0}
         aria-valuemax={track.duration}
         aria-valuenow={Math.floor(time)}
@@ -132,21 +151,23 @@ export function Stage({
         <span>{formatTime(time)}</span>
         <span>{formatTime(track.duration)}</span>
       </div>
-      <div className="ctl">
-        <button
-          className="pp"
-          aria-label="Lecture / pause"
-          onClick={onTogglePlay}
-        >
-          <svg className="ps" viewBox="0 0 24 24" aria-hidden="true">
-            <rect x="6" y="4" width="4" height="16" />
-            <rect x="14" y="4" width="4" height="16" />
-          </svg>
-          <svg className="pl" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M8 5v14l11-7z" />
-          </svg>
-        </button>
-      </div>
+      {!readOnly && (
+        <div className="ctl">
+          <button
+            className="pp"
+            aria-label="Lecture / pause"
+            onClick={onTogglePlay}
+          >
+            <svg className="ps" viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="6" y="4" width="4" height="16" />
+              <rect x="14" y="4" width="4" height="16" />
+            </svg>
+            <svg className="pl" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+          </button>
+        </div>
+      )}
     </section>
   )
 }
