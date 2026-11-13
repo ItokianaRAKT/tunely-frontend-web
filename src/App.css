@@ -104,6 +104,40 @@ svg.i {
   height: 12px;
 }
 
+.room .dissolve {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 9px;
+  padding: 6px 10px;
+  border: 1px solid rgba(255, 107, 107, 0.45);
+  border-radius: 2px;
+  font: 400 11px var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #ff6b6b;
+  transition:
+    background 0.16s,
+    border-color 0.16s,
+    color 0.16s;
+}
+
+.room .dissolve svg {
+  width: 13px;
+  height: 13px;
+}
+
+.room .dissolve:hover {
+  background: rgba(255, 107, 107, 0.12);
+  border-color: #ff6b6b;
+}
+
+.room .dissolve.confirm {
+  background: #ff6b6b;
+  border-color: #ff6b6b;
+  color: var(--ink);
+}
+
 nav {
   display: flex;
   flex-direction: column;
