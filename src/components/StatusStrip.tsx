@@ -73,8 +73,12 @@ export function StatusStrip({
             </>
           ) : (
             <div className="meta">
-              <b>File vide</b>
-              <small>Ajoutez un titre pour compléter la playlist</small>
+              <b>{track ? 'Dernier titre' : 'File vide'}</b>
+              <small>
+                {track
+                  ? 'Aucune suite dans la file'
+                  : 'Ajoutez un titre pour compléter la playlist'}
+              </small>
             </div>
           )}
         </div>

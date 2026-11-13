@@ -18,9 +18,8 @@ export function usePlayer(notify: Notify, initialTracks: Track[]) {
   const track = tracks[currentIndex]
 
   const upcomingIndex = useMemo(() => {
-    const count = tracks.length
-    if (count < 2) return currentIndex
-    return (currentIndex + 1) % count
+    const next = currentIndex + 1
+    return next < tracks.length ? next : -1
   }, [tracks.length, currentIndex])
 
   const latestRef = useRef({ time, track, currentIndex, tracks, upcomingIndex })
