@@ -23,11 +23,6 @@ export function usePlayer(notify: Notify, initialTracks: Track[]) {
     return (currentIndex + 1) % count
   }, [tracks.length, currentIndex])
 
-  const goToTrack = useCallback((index: number) => {
-    setCurrentIndex(index)
-    setTime(0)
-  }, [])
-
   const latestRef = useRef({ time, track, currentIndex, tracks, upcomingIndex })
 
   useLayoutEffect(() => {
@@ -62,10 +57,17 @@ export function usePlayer(notify: Notify, initialTracks: Track[]) {
         setPlaying(false)
         return
       }
-      goToTrack(latest.upcomingIndex)
+      const finishedIndex = latest.currentIndex
+      setTracks((list) => list.filter((_, index) => index !== finishedIndex))
+      setCurrentIndex(finishedIndex)
+      setTime(0)
+      setNewIndex((value) => {
+        if (value === null || value === finishedIndex) return null
+        return value > finishedIndex ? value - 1 : value
+      })
     }, 250)
     return () => window.clearInterval(id)
-  }, [playing, goToTrack])
+  }, [playing])
 
   const togglePlay = useCallback(() => {
     if (!track) return
