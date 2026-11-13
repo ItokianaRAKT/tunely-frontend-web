@@ -10,7 +10,7 @@ import { SEED_PARTICIPANTS, YOU_ID } from '../data/participants'
 import { useApp } from '../context/app-context'
 
 export function RoomGuestPage() {
-  const { room, leaveRoom, setHost } = useApp()
+  const { room, leaveRoom, dissolveRoom, setHost } = useApp()
   const participants = room?.participants ?? SEED_PARTICIPANTS
   const [toast, setToast] = useState<{ text: string; icon?: IconName } | null>(null)
   const [queueOpen, setQueueOpen] = useState(true)
@@ -115,6 +115,12 @@ export function RoomGuestPage() {
   )
 
   const canNameHost = hostId === YOU_ID
+  const isOwner = room?.ownerId === YOU_ID
+
+  const dissolve = useCallback(() => {
+    pausePlayback()
+    dissolveRoom()
+  }, [pausePlayback, dissolveRoom])
 
   return (
     <>
@@ -122,11 +128,13 @@ export function RoomGuestPage() {
       <main className={playing ? 'shell' : 'shell paused'} id="app">
         <Sidebar
           code={room?.code ?? '#7F3Q'}
+          canDissolve={isOwner}
           onCopy={copyCode}
           onCreate={() =>
             showToast('Invité : la création de Room reste ouverte à chacun')
           }
           onNav={handleNav}
+          onDissolve={dissolve}
         />
         <Stage
           track={track}

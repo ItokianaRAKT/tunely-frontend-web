@@ -3,9 +3,11 @@ import { Icon, type IconName } from './Icon'
 
 type SidebarProps = {
   code: string
+  canDissolve?: boolean
   onCopy: () => void
   onCreate: () => void
   onNav: (label: string) => void
+  onDissolve?: () => void
 }
 
 const NAV_ITEMS: { label: string; icon: IconName }[] = [
@@ -13,12 +15,30 @@ const NAV_ITEMS: { label: string; icon: IconName }[] = [
   { label: 'Mes Rooms', icon: 'folder' },
 ]
 
-export function Sidebar({ code, onCopy, onCreate, onNav }: SidebarProps) {
+export function Sidebar({
+  code,
+  canDissolve = false,
+  onCopy,
+  onCreate,
+  onNav,
+  onDissolve,
+}: SidebarProps) {
   const [active, setActive] = useState('Accueil')
+  const [confirming, setConfirming] = useState(false)
 
   const handleNav = (label: string) => {
+    setConfirming(false)
     setActive(label)
     onNav(label)
+  }
+
+  const handleDissolve = () => {
+    if (!confirming) {
+      setConfirming(true)
+      return
+    }
+    setConfirming(false)
+    onDissolve?.()
   }
 
   return (
@@ -35,6 +55,16 @@ export function Sidebar({ code, onCopy, onCreate, onNav }: SidebarProps) {
             <span>{code}</span>
             <Icon name="copy" />
           </button>
+          {canDissolve && onDissolve && (
+            <button
+              className={confirming ? 'dissolve confirm' : 'dissolve'}
+              aria-label="Dissoudre la Room"
+              onClick={handleDissolve}
+            >
+              <Icon name="exit" />
+              {confirming ? 'Confirmer ?' : 'Dissoudre'}
+            </button>
+          )}
         </div>
       </div>
       <nav aria-label="Navigation">

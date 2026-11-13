@@ -13,6 +13,7 @@ export type Room = {
   code: string
   mode: 'host' | 'guest'
   hostId: string
+  ownerId: string
   participants: Participant[]
 }
 
@@ -25,6 +26,7 @@ export type AppContextValue = {
   createRoom: () => void
   enterRoom: (code: string, mode: 'host' | 'guest') => void
   leaveRoom: () => void
+  dissolveRoom: () => void
   setHost: (participantId: string) => void
 }
 

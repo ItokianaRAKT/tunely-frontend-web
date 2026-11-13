@@ -60,6 +60,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       code: buildCode(),
       mode: 'host',
       hostId: YOU_ID,
+      ownerId: YOU_ID,
       participants: participantsFor(user),
     })
     setScreen('room-host')
@@ -72,6 +73,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         code: normalizeCode(code),
         mode,
         hostId: mode === 'host' ? YOU_ID : SEED_PARTICIPANTS[0].id,
+        ownerId: mode === 'host' ? YOU_ID : SEED_PARTICIPANTS[0].id,
         participants: participantsFor(user),
       })
       setScreen(mode === 'host' ? 'room-host' : 'room-guest')
@@ -83,6 +85,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setRoom(null)
     setScreen('home')
   }, [])
+
+  const dissolveRoom = useCallback(() => {
+    if (!room || room.ownerId !== YOU_ID) return
+    setRoom(null)
+    setScreen('home')
+  }, [room])
 
   const setHost = useCallback((participantId: string) => {
     setRoom((current) =>
@@ -101,6 +109,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         createRoom,
         enterRoom,
         leaveRoom,
+        dissolveRoom,
         setHost,
       }}
     >
