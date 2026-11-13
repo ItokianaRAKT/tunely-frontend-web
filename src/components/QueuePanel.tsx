@@ -10,6 +10,7 @@ type QueuePanelProps = {
   currentIndex: number
   newIndex: number | null
   votes: Record<number, Vote>
+  canAdd?: boolean
   open: boolean
   onToggle: () => void
   onVote: (index: number, vote: Vote) => void
@@ -22,6 +23,7 @@ export function QueuePanel({
   currentIndex,
   newIndex,
   votes,
+  canAdd = true,
   open,
   onToggle,
   onVote,
@@ -62,10 +64,12 @@ export function QueuePanel({
             <Icon name="chev" />
           </span>
         </button>
-        <button className="ghost" onClick={onAdd}>
-          <Icon name="plus" style={{ width: 14, height: 14 }} />
-          Ajouter
-        </button>
+        {canAdd && (
+          <button className="ghost" onClick={onAdd}>
+            <Icon name="plus" style={{ width: 14, height: 14 }} />
+            Ajouter
+          </button>
+        )}
       </div>
       <ul className="ql" id="ql" ref={listRef}>
         {tracks.map((track, index) => (

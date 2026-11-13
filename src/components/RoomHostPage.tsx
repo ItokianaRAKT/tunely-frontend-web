@@ -1,0 +1,193 @@
+import { useCallback, useRef, useState } from 'react'
+import { Icon, IconSprite, type IconName } from './Icon'
+import { Sidebar } from './Sidebar'
+import { Stage } from './Stage'
+import { QueuePanel } from './QueuePanel'
+import type { Vote } from './QueuePanel'
+import { StatusStrip } from './StatusStrip'
+import { AddTrackDialog } from './AddTrackDialog'
+import { usePlayer } from '../hooks/usePlayer'
+import { SEED_PARTICIPANTS, YOU_ID } from '../data/participants'
+import { useApp } from '../context/app-context'
+
+export function RoomHostPage() {
+  const { room, createRoom, leaveRoom, setHost } = useApp()
+  const participants = room?.participants ?? SEED_PARTICIPANTS
+  const [toast, setToast] = useState<{ text: string; icon?: IconName } | null>(null)
+  const [adding, setAdding] = useState(false)
+  const [queueOpen, setQueueOpen] = useState(true)
+  const [votes, setVotes] = useState<Record<number, Vote>>({})
+  const [hostId, setHostId] = useState(room?.hostId ?? YOU_ID)
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+
+  const showToast = useCallback((message: string, icon?: IconName) => {
+    setToast(icon ? { text: message, icon } : { text: message })
+    clearTimeout(toastTimer.current)
+    toastTimer.current = setTimeout(() => setToast(null), 2200)
+  }, [])
+
+  const {
+    tracks,
+    track,
+    currentIndex,
+    upcomingIndex,
+    time,
+    playing,
+    togglePlay,
+    seekTo,
+    addTrack,
+    newIndex,
+    pausePlayback,
+  } = usePlayer(showToast)
+
+  const handleNav = useCallback(
+    (label: string) => {
+      if (label === 'Accueil' || label === 'Mes Rooms') {
+        pausePlayback()
+        leaveRoom()
+        return
+      }
+      showToast(`${label} : non disponible dans ce prototype`)
+    },
+    [pausePlayback, leaveRoom, showToast],
+  )
+
+  const code = room?.code ?? ''
+
+  const copyCode = useCallback(() => {
+    const fallback = () => {
+      const area = document.createElement('textarea')
+      area.value = code
+      area.style.cssText = 'position:fixed;opacity:0'
+      document.body.appendChild(area)
+      area.select()
+      try {
+        if (document.execCommand('copy')) showToast(`Code ${code} copié`)
+        else showToast(`Copie impossible : ${code}`)
+      } catch {
+        showToast(`Copie impossible : ${code}`)
+      }
+      area.remove()
+    }
+
+    if (navigator.clipboard?.writeText && code) {
+      navigator.clipboard.writeText(code).then(
+        () => showToast(`Code ${code} copié`),
+        fallback,
+      )
+    } else {
+      fallback()
+    }
+  }, [code, showToast])
+
+  const handleAddTrack = useCallback(
+    (title: string, artist: string) => {
+      addTrack(title, artist)
+      setQueueOpen(true)
+    },
+    [addTrack],
+  )
+
+  const quitRoom = useCallback(() => {
+    pausePlayback()
+    leaveRoom()
+  }, [pausePlayback, leaveRoom])
+
+  const handleVote = useCallback(
+    (index: number, vote: Vote) => {
+      const title = tracks[index].title
+      setVotes((current) => {
+        if (current[index] === vote) {
+          showToast(`Vote retiré · ${title}`)
+          const next = { ...current }
+          delete next[index]
+          return next
+        }
+        showToast(
+          `Vote enregistré · ${title}`,
+          vote === 'up' ? 'like' : 'dislike',
+        )
+        return { ...current, [index]: vote }
+      })
+    },
+    [tracks, showToast],
+  )
+
+  const nameHost = useCallback(
+    (id: string) => {
+      if (id === hostId) return
+      const host = participants.find((p) => p.id === id)
+      if (!host) return
+      setHostId(id)
+      setHost(id)
+      showToast(`${host.name} est désormais hôte · vous perdez ce pouvoir`)
+    },
+    [hostId, participants, setHost, showToast],
+  )
+
+  const canNameHost = hostId === YOU_ID
+
+  return (
+    <>
+      <IconSprite />
+      <main className={playing ? 'shell' : 'shell paused'} id="app">
+        <Sidebar
+          code={room?.code ?? '#7F3Q'}
+          onCopy={copyCode}
+          onCreate={() => {
+            createRoom()
+            showToast('Nouvelle Room créée')
+          }}
+          onNav={handleNav}
+        />
+        <Stage
+          track={track}
+          index={currentIndex}
+          time={time}
+          readOnly={false}
+          onTogglePlay={togglePlay}
+          onSeek={seekTo}
+        />
+        <QueuePanel
+          tracks={tracks}
+          currentIndex={currentIndex}
+          newIndex={newIndex}
+          votes={votes}
+          canAdd
+          open={queueOpen}
+          onToggle={() => setQueueOpen((value) => !value)}
+          onVote={handleVote}
+          onAdd={() => setAdding(true)}
+          onQuit={quitRoom}
+        />
+        <StatusStrip
+          track={track}
+          time={time}
+          upcoming={tracks[upcomingIndex]}
+          participants={participants}
+          hostId={hostId}
+          canNameHost={canNameHost}
+          onNameHost={nameHost}
+        />
+      </main>
+
+      <AddTrackDialog
+        open={adding}
+        onClose={() => setAdding(false)}
+        onAdd={handleAddTrack}
+      />
+
+      <div
+        id="toast"
+        className={toast ? 'on' : undefined}
+        role="status"
+        aria-live="polite"
+      >
+        {toast?.icon && (
+          <Icon name={toast.icon} className={toast.icon === 'like' ? 'up' : undefined} />
+        )}
+        {toast?.text}
+      </div>
+    </>
+  )
+}
