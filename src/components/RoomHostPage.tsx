@@ -31,6 +31,14 @@ export function RoomHostPage() {
   }, [])
 
   const backendRoomRef = useRef<Promise<string | null> | null>(null)
+  const backendNoticeRef = useRef(false)
+  const youtubeNoticeRef = useRef(false)
+
+  const noticeBackendDown = useCallback(() => {
+    if (backendNoticeRef.current) return
+    backendNoticeRef.current = true
+    showToast('Backend injoignable · lecture simulée')
+  }, [showToast])
 
   const ensureBackendRoom = useCallback(() => {
     if (room?.backendCode) return Promise.resolve(room.backendCode)
@@ -50,10 +58,20 @@ export function RoomHostPage() {
 
   const adoptTrack = useCallback(
     (target: { title: string; artist: string }) =>
-      ensureBackendRoom().then((code) =>
-        code ? resolveVideoId(code, target.title, target.artist) : null,
-      ),
-    [ensureBackendRoom],
+      ensureBackendRoom().then((code) => {
+        if (!code) {
+          noticeBackendDown()
+          return null
+        }
+        return resolveVideoId(code, target.title, target.artist).then((video) => {
+          if (video && !youtubeNoticeRef.current) {
+            youtubeNoticeRef.current = true
+            showToast('Lecture YouTube connectée')
+          }
+          return video
+        })
+      }),
+    [ensureBackendRoom, noticeBackendDown, showToast],
   )
 
   const {
