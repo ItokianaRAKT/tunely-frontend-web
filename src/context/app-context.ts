@@ -17,6 +17,7 @@ export type Room = {
   ownerId: string
   participants: Participant[]
   initialTracks: Track[]
+  backendCode?: string | null
 }
 
 export type AppContextValue = {
@@ -30,6 +31,7 @@ export type AppContextValue = {
   leaveRoom: () => void
   dissolveRoom: () => void
   setHost: (participantId: string) => void
+  setBackendCode: (code: string) => void
 }
 
 export const AppContext = createContext<AppContextValue | null>(null)

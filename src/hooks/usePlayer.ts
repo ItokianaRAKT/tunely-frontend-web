@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { GRADIENTS } from '../data/tracks'
 import type { Track } from '../data/tracks'
+import type { AdoptedVideo } from '../api/tunely'
 import { useYouTubePlayer } from './useYouTubePlayer'
 
 type Notify = (message: string) => void
 
 type PlayerOptions = {
   youtube?: boolean
+  adopt?: (track: Track) => Promise<AdoptedVideo | null>
 }
 
 function initialTime(tracks: Track[]) {
@@ -18,7 +20,7 @@ export function usePlayer(
   initialTracks: Track[],
   options: PlayerOptions = {},
 ) {
-  const { youtube = false } = options
+  const { youtube = false, adopt } = options
   const [tracks, setTracks] = useState(initialTracks)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [playing, setPlaying] = useState(initialTracks.length > 0)
@@ -115,6 +117,43 @@ export function usePlayer(
       if (latestRef.current.track?.youtubeId) setPlaying(false)
     },
   })
+
+  // The adopter identity may change (backend room created mid-flight); keep
+  // it in a ref so a track is only ever adopted by a single request.
+  const adoptRef = useRef(adopt)
+  useLayoutEffect(() => {
+    adoptRef.current = adopt
+  })
+
+  useEffect(() => {
+    const resolve = adoptRef.current
+    if (!youtube || !resolve || !track || track.youtubeId) return
+    let cancelled = false
+    void resolve(track)
+      .then((video) => {
+        if (!video || cancelled) return
+        setTracks((list) => {
+          const index = latestRef.current.currentIndex
+          const current = list[index]
+          if (!current || current.title !== track.title || current.youtubeId) {
+            return list
+          }
+          return list.map((item, i) =>
+            i === index
+              ? {
+                  ...item,
+                  youtubeId: video.youtubeId,
+                  duration: video.duration ?? item.duration,
+                }
+              : item,
+          )
+        })
+      })
+      .catch(() => undefined)
+    return () => {
+      cancelled = true
+    }
+  }, [youtube, track])
 
   useEffect(() => {
     if (!yt) return

@@ -75,7 +75,7 @@ async function call<T>(path: string, options: RequestOptions = {}): Promise<T | 
   }
 }
 
-export async function createRoom(name: string): Promise<string | null> {
+export async function createBackendRoom(name: string): Promise<string | null> {
   const room = await call<{ code?: unknown }>('/rooms/', {
     method: 'POST',
     body: { name },
@@ -104,4 +104,49 @@ export async function skipToNext(code: string): Promise<BackendTrack | null> {
 
 export async function getCurrentTrack(code: string): Promise<CurrentTrackState | null> {
   return call<CurrentTrackState>(`/rooms/${encodeURIComponent(code)}/current`)
+}
+
+export type AdoptedVideo = {
+  youtubeId: string
+  duration: number | null
+}
+
+function matches(track: BackendTrack, title: string, artist: string) {
+  return track.title === title && track.artist === artist
+}
+
+function toVideo(track: BackendTrack): AdoptedVideo | null {
+  if (!track.youtube_id) return null
+  return { youtubeId: track.youtube_id, duration: track.duration_seconds }
+}
+
+async function startTrack(
+  code: string,
+  title: string,
+  artist: string,
+): Promise<AdoptedVideo | null> {
+  await proposeTrack(code, title, artist)
+  const started = await skipToNext(code)
+  if (!started || !matches(started, title, artist)) return null
+  return toVideo(started)
+}
+
+/**
+ * Resolve the YouTube video id of a local track through the backend.
+ * Returns null whenever the backend is unreachable or its queue does not
+ * line up with the local one, so callers can stay on simulated playback.
+ */
+export async function resolveVideoId(
+  code: string,
+  title: string,
+  artist: string,
+): Promise<AdoptedVideo | null> {
+  const current = await getCurrentTrack(code)
+  if (current?.track) {
+    if (matches(current.track, title, artist)) return toVideo(current.track)
+    // The backend clock is on another track: propose the local one and let
+    // the backend advance, adopting only on an exact title/artist match.
+    return startTrack(code, title, artist)
+  }
+  return startTrack(code, title, artist)
 }
