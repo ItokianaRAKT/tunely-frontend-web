@@ -3,6 +3,7 @@ export type Track = {
   artist: string
   duration: number
   gradient: string
+  youtubeId?: string
 }
 
 export const GRADIENTS = [

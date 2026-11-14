@@ -40,7 +40,7 @@ export function RoomHostPage() {
     addTrack,
     newIndex,
     pausePlayback,
-  } = usePlayer(showToast, initialTracks)
+  } = usePlayer(showToast, initialTracks, { youtube: true })
 
   const handleNav = useCallback(
     (label: string) => {
