@@ -16,16 +16,33 @@ if (!publishableKey) {
 
 const clerkAppearance = {
   baseTheme: undefined,
+  variables: {
+    colorBackground: 'var(--card-bg)',
+    colorText: 'var(--card-text)',
+    colorPrimary: 'var(--blue)',
+    colorTextOnPrimaryBackground: '#ffffff',
+    colorInputBackground: 'var(--card-bg)',
+    colorInputText: 'var(--card-text)',
+  },
   elements: {
+    rootBox: {
+      width: '100%',
+      display: 'flex',
+      justifyContent: 'center',
+      margin: '0 auto',
+    },
     cardBox: {
-      boxShadow: '0 20px 50px rgba(0, 0, 0, 0.6)',
+      backgroundColor: 'var(--card-bg)',
+      boxShadow: '0 20px 50px var(--card-shadow)',
       borderRadius: '16px',
-      border: '1px solid rgba(255, 255, 255, 0.2)',
+      border: '1px solid var(--card-border)',
       overflow: 'hidden',
+      margin: '0 auto',
     },
     card: {
-      backgroundColor: '#ffffff',
+      backgroundColor: 'var(--card-bg)',
       borderRadius: '0px',
+      color: 'var(--card-text)',
     },
   },
 }

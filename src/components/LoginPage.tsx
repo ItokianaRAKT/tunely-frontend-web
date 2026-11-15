@@ -7,23 +7,36 @@ import {
   useAuth,
   useUser,
 } from '@clerk/clerk-react'
-import { Icon } from './Icon'
 
 const signInAppearance = {
   baseTheme: undefined,
+  variables: {
+    colorBackground: 'var(--card-bg)',
+    colorText: 'var(--card-text)',
+    colorPrimary: 'var(--blue)',
+    colorTextOnPrimaryBackground: '#ffffff',
+    colorInputBackground: 'var(--card-bg)',
+    colorInputText: 'var(--card-text)',
+  },
   elements: {
-    cardBox: {
-      boxShadow: '0 20px 50px rgba(0, 0, 0, 0.6)',
-      borderRadius: '16px',
-      border: '1px solid rgba(255, 255, 255, 0.2)',
-      overflow: 'hidden',
-    },
-    card: {
-      backgroundColor: '#ffffff',
-      borderRadius: '0px',
-    },
     rootBox: {
       width: '100%',
+      display: 'flex',
+      justifyContent: 'center',
+      margin: '0 auto',
+    },
+    cardBox: {
+      backgroundColor: 'var(--card-bg)',
+      boxShadow: '0 20px 50px var(--card-shadow)',
+      borderRadius: '16px',
+      border: '1px solid var(--card-border)',
+      overflow: 'hidden',
+      margin: '0 auto',
+    },
+    card: {
+      backgroundColor: 'var(--card-bg)',
+      borderRadius: '0px',
+      color: 'var(--card-text)',
     },
   },
 }
@@ -40,33 +53,25 @@ export function LoginPage() {
   }, [isLoaded])
 
   return (
-    <div className="auth">
-      <div className="auth-card">
-        <div className="auth-head">
-          <Icon name="logo" className="auth-logo" style={{ width: 36, height: 28 }} />
-          <h1>Tunely</h1>
-        </div>
-        <p className="auth-sub">The Listening Space</p>
+    <div className="auth-shell">
+      {showSignIn ? (
+        <>
+          <SignedOut>
+            <SignIn appearance={signInAppearance} />
+          </SignedOut>
 
-        {showSignIn ? (
-          <>
-            <SignedOut>
-              <SignIn appearance={signInAppearance} />
-            </SignedOut>
-
-            <SignedIn>
-              <div className="auth-profile">
-                <UserButton />
-                <p className="auth-sub">
-                  Connecté en tant que {user?.fullName ?? 'utilisateur'}
-                </p>
-              </div>
-            </SignedIn>
-          </>
-        ) : (
-          <p className="auth-sub">Connexion en cours...</p>
-        )}
-      </div>
+          <SignedIn>
+            <div className="auth-profile">
+              <UserButton />
+              <p className="auth-sub">
+                Connecté en tant que {user?.fullName ?? 'utilisateur'}
+              </p>
+            </div>
+          </SignedIn>
+        </>
+      ) : (
+        <p className="auth-sub">Connexion en cours...</p>
+      )}
     </div>
   )
 }
