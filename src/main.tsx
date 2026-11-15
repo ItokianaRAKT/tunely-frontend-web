@@ -1,3 +1,4 @@
+import { ClerkProvider } from '@clerk/react'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { ClerkProvider } from '@clerk/clerk-react'
@@ -33,11 +34,7 @@ const clerkLocalization = {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ClerkProvider
-      publishableKey={publishableKey}
-      appearance={clerkAppearance}
-      localization={clerkLocalization}
-    >
+    <ClerkProvider afterSignOutUrl="/">
       <AppProvider>
         <App />
       </AppProvider>

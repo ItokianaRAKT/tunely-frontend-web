@@ -1,51 +1,33 @@
-import { useEffect, useState } from 'react'
-import {
-  SignIn,
-  SignedIn,
-  SignedOut,
-  UserButton,
-  useAuth,
-  useUser,
-} from '@clerk/clerk-react'
-import { dark } from '@clerk/themes'
-
-const signInAppearance = {
-  baseTheme:
-    typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches
-      ? dark
-      : undefined,
-}
+import { useState } from 'react'
+import type { MouseEvent } from 'react'
+import { SignIn, SignUp } from '@clerk/react'
 
 export function LoginPage() {
-  const { isLoaded } = useAuth()
-  const { user } = useUser()
-  const [showSignIn, setShowSignIn] = useState(false)
+  const [signingUp, setSigningUp] = useState(false)
 
-  useEffect(() => {
-    if (!isLoaded) return
-    const timer = setTimeout(() => setShowSignIn(true), 400)
-    return () => clearTimeout(timer)
-  }, [isLoaded])
+  // Without a router, Clerk's cross-flow links navigate to its hosted pages.
+  // Intercept them so the sign-in and sign-up flows both stay in the app.
+  const handleAuthLinkClick = (e: MouseEvent<HTMLDivElement>) => {
+    const anchor = (e.target as HTMLElement).closest('a')
+    if (!anchor) return
+    const href = anchor.getAttribute('href') ?? ''
+    if (href.includes('sign-up')) {
+      e.preventDefault()
+      e.stopPropagation()
+      setSigningUp(true)
+    } else if (href.includes('sign-in')) {
+      e.preventDefault()
+      e.stopPropagation()
+      setSigningUp(false)
+    }
+  }
 
   return (
-    <div className="auth-shell">
-      {showSignIn ? (
-        <>
-          <SignedOut>
-            <SignIn appearance={signInAppearance} />
-          </SignedOut>
-
-          <SignedIn>
-            <div className="auth-profile">
-              <UserButton />
-              <p className="auth-sub">
-                Connecté en tant que {user?.fullName ?? 'utilisateur'}
-              </p>
-            </div>
-          </SignedIn>
-        </>
+    <div className="auth" onClickCapture={handleAuthLinkClick}>
+      {signingUp ? (
+        <SignUp routing="hash" signInUrl="#/sign-in" />
       ) : (
-        <p className="auth-sub">Connexion en cours...</p>
+        <SignIn routing="hash" signUpUrl="#/sign-up" />
       )}
     </div>
   )
