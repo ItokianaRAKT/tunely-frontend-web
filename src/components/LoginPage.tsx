@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import type { MouseEvent } from 'react'
 import { SignIn, SignUp } from '@clerk/react'
-import { Icon } from './Icon'
 
 export function LoginPage() {
   const [signingUp, setSigningUp] = useState(false)
@@ -24,19 +23,12 @@ export function LoginPage() {
   }
 
   return (
-    <div className="auth">
-      <div className="auth-card" onClickCapture={handleAuthLinkClick}>
-        <div className="auth-head">
-          <Icon name="logo" className="auth-logo" style={{ width: 36, height: 28 }} />
-          <h1>Tunely</h1>
-        </div>
-        <p className="auth-sub">The Listening Space</p>
-        {signingUp ? (
-          <SignUp routing="hash" signInUrl="#/sign-in" />
-        ) : (
-          <SignIn routing="hash" signUpUrl="#/sign-up" />
-        )}
-      </div>
+    <div className="auth" onClickCapture={handleAuthLinkClick}>
+      {signingUp ? (
+        <SignUp routing="hash" signInUrl="#/sign-in" />
+      ) : (
+        <SignIn routing="hash" signUpUrl="#/sign-up" />
+      )}
     </div>
   )
 }

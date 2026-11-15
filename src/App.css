@@ -1163,43 +1163,6 @@ dialog .mode-pick > p {
   padding: 24px;
 }
 
-.auth-card {
-  width: 100%;
-  max-width: 380px;
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 40px 32px;
-  text-align: center;
-  color: var(--chalk);
-}
-
-.auth-head {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin-bottom: 6px;
-}
-
-.auth-logo {
-  color: var(--blue);
-}
-
-.auth-head h1 {
-  font: 700 28px var(--head);
-  letter-spacing: -0.02em;
-  margin: 0;
-}
-
-.auth-sub {
-  color: var(--blue);
-  font: 400 13px var(--mono);
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  margin: 0 0 28px;
-}
-
 .btn {
   padding: 12px 20px;
   border-radius: 3px;
