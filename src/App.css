@@ -104,6 +104,15 @@ svg.i {
   height: 12px;
 }
 
+.room .ptag {
+  display: block;
+  margin-top: 7px;
+  font: 400 9.5px var(--mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--conc);
+}
+
 .room .dissolve {
   display: inline-flex;
   align-items: center;
@@ -768,6 +777,7 @@ h2 {
 
 .plist li {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 10px;
   padding: 7px 8px;
@@ -820,6 +830,12 @@ h2 {
   padding: 3px 7px;
 }
 
+.pbadge.lecture {
+  color: var(--chalk);
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(242, 240, 233, 0.4);
+}
+
 .nominate {
   flex: none;
   font-size: 10.5px;
@@ -837,6 +853,14 @@ h2 {
   background: rgba(255, 255, 255, 0.08);
   border-color: rgba(242, 240, 233, 0.4);
   color: var(--chalk);
+}
+
+.pacts {
+  flex: 0 0 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 2px;
 }
 
 /* dialog */
@@ -904,6 +928,59 @@ dialog input {
 
 .btn.p:hover {
   background: #3a5eff;
+}
+
+/* playback mode choice */
+dialog .mode-pick > p {
+  margin: -8px 0 18px;
+  font-size: 13.5px;
+  color: var(--conc);
+}
+
+.mode-cards {
+  display: grid;
+  gap: 12px;
+}
+
+.mode-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 12px;
+  row-gap: 4px;
+  align-items: center;
+  text-align: left;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--chalk);
+  transition:
+    background 0.16s,
+    border-color 0.16s;
+}
+
+.mode-card svg {
+  grid-row: span 2;
+  width: 22px;
+  height: 22px;
+  color: var(--blue);
+}
+
+.mode-card b {
+  font: 700 15px var(--head);
+}
+
+.mode-card small {
+  grid-column: 2;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--conc);
+}
+
+.mode-card:hover {
+  background: rgba(36, 76, 255, 0.1);
+  border-color: rgba(36, 76, 255, 0.55);
 }
 
 /* toast */

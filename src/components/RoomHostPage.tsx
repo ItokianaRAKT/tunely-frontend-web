@@ -6,6 +6,7 @@ import { QueuePanel } from './QueuePanel'
 import type { Vote } from './QueuePanel'
 import { StatusStrip } from './StatusStrip'
 import { AddTrackDialog } from './AddTrackDialog'
+import { ModeChoiceDialog } from './ModeChoiceDialog'
 import { usePlayer } from '../hooks/usePlayer'
 import { createBackendRoom, resolveVideoId } from '../api/tunely'
 import { SEED_PARTICIPANTS, YOU_ID } from '../data/participants'
@@ -13,12 +14,13 @@ import { SEED_TRACKS } from '../data/tracks'
 import { useApp } from '../context/app-context'
 
 export function RoomHostPage() {
-  const { room, createRoom, leaveRoom, dissolveRoom, setHost, setBackendCode } =
+  const { room, createRoom, leaveRoom, dissolveRoom, setHost, delegateSpeaker, setBackendCode } =
     useApp()
   const participants = room?.participants ?? SEED_PARTICIPANTS
   const initialTracks = room?.initialTracks ?? SEED_TRACKS
   const [toast, setToast] = useState<{ text: string; icon?: IconName } | null>(null)
   const [adding, setAdding] = useState(false)
+  const [creating, setCreating] = useState(false)
   const [queueOpen, setQueueOpen] = useState(true)
   const [votes, setVotes] = useState<Record<string, Vote>>({})
   const [hostId, setHostId] = useState(room?.hostId ?? YOU_ID)
@@ -176,6 +178,28 @@ export function RoomHostPage() {
 
   const canNameHost = hostId === YOU_ID
   const isOwner = room?.ownerId === YOU_ID
+  const playbackMode = room?.playback ?? 'in-person'
+  const speakerId = room?.speakerId ?? YOU_ID
+  const canControl =
+    playbackMode === 'remote' ? hostId === YOU_ID : speakerId === YOU_ID
+  const speakerName = participants.find((p) => p.id === speakerId)?.name
+  const stageBanner = canControl
+    ? undefined
+    : playbackMode === 'remote'
+      ? "Lecture seule · l'hôte contrôle la lecture"
+      : `Lecture sur le téléphone de ${speakerName ?? "l'hôte"}`
+
+  const handleDelegate = useCallback(
+    (id: string) => {
+      const target = participants.find((p) => p.id === id)
+      const givingBack = id === hostId && id !== YOU_ID
+      delegateSpeaker(id)
+      if (id === YOU_ID) showToast('Lecture reprise · vous pilotez la musique')
+      else if (givingBack) showToast(`Lecture rendue à ${target?.name ?? 'l’hôte'}`)
+      else showToast(`Lecture donnée à ${target?.name ?? 'ce participant'}`)
+    },
+    [participants, hostId, delegateSpeaker, showToast],
+  )
 
   const dissolve = useCallback(() => {
     pausePlayback()
@@ -188,12 +212,10 @@ export function RoomHostPage() {
       <main className={playing ? 'shell' : 'shell paused'} id="app">
         <Sidebar
           code={room?.code ?? '#7F3Q'}
+          playback={room?.playback ?? 'in-person'}
           canDissolve={isOwner}
           onCopy={copyCode}
-          onCreate={() => {
-            createRoom()
-            showToast('Nouvelle Room créée')
-          }}
+          onCreate={() => setCreating(true)}
           onNav={handleNav}
           onDissolve={dissolve}
         />
@@ -201,7 +223,8 @@ export function RoomHostPage() {
           track={track}
           index={currentIndex}
           time={time}
-          readOnly={false}
+          readOnly={!canControl}
+          banner={stageBanner}
           onTogglePlay={togglePlay}
           onSeek={seekTo}
         />
@@ -223,8 +246,11 @@ export function RoomHostPage() {
           upcoming={tracks[upcomingIndex]}
           participants={participants}
           hostId={hostId}
+          playback={room?.playback ?? 'in-person'}
+          speakerId={room?.speakerId ?? YOU_ID}
           canNameHost={canNameHost}
           onNameHost={nameHost}
+          onDelegate={handleDelegate}
         />
       </main>
 
@@ -232,6 +258,16 @@ export function RoomHostPage() {
         open={adding}
         onClose={() => setAdding(false)}
         onAdd={handleAddTrack}
+      />
+
+      <ModeChoiceDialog
+        open={creating}
+        onClose={() => setCreating(false)}
+        onChoose={(playback) => {
+          createRoom(playback)
+          setCreating(false)
+          showToast('Nouvelle Room créée')
+        }}
       />
 
       <div

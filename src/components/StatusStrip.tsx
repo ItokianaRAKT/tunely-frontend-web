@@ -4,6 +4,7 @@ import { Icon } from './Icon'
 import type { Track } from '../data/tracks'
 import type { Participant } from '../data/participants'
 import { YOU_ID } from '../data/participants'
+import type { PlaybackMode } from '../context/app-context'
 
 type StatusStripProps = {
   track?: Track
@@ -11,8 +12,11 @@ type StatusStripProps = {
   upcoming?: Track
   participants: Participant[]
   hostId: string
+  playback: PlaybackMode
+  speakerId: string
   canNameHost: boolean
   onNameHost: (id: string) => void
+  onDelegate: (id: string) => void
 }
 
 export function StatusStrip({
@@ -21,8 +25,11 @@ export function StatusStrip({
   upcoming,
   participants,
   hostId,
+  playback,
+  speakerId,
   canNameHost,
   onNameHost,
+  onDelegate,
 }: StatusStripProps) {
   const [listOpen, setListOpen] = useState(false)
   const wrapRef = useRef<HTMLDivElement>(null)
@@ -114,34 +121,77 @@ export function StatusStrip({
             <span className="more">+{participants.length - 3}</span>
           )}
         </button>
-        <ul className="plist" id="plist" hidden={!listOpen}>
-          {participants.map((person) => (
-            <li key={person.id}>
-              <span
-                className="pi"
-                style={{ '--c': person.color } as CSSProperties}
-              >
-                {person.initials}
-              </span>
-              <span className="pn">
-                <b>{person.name}</b>
-                {person.id === YOU_ID && <small>vous</small>}
-              </span>
-              {person.id === hostId ? (
-                <span className="pbadge">Hôte</span>
-              ) : (
-                canNameHost && (
-                  <button
-                    className="nominate"
-                    onClick={() => onNameHost(person.id)}
+          <ul className="plist" id="plist" hidden={!listOpen}>
+            {participants.map((person) => {
+              const isViewerHost = hostId === YOU_ID
+              const viewerHoldsLecture = speakerId === YOU_ID
+              const inPerson = playback === 'in-person'
+              const reclaim =
+                inPerson && isViewerHost && speakerId !== hostId && person.id === hostId
+              const handBack =
+                inPerson && viewerHoldsLecture && !isViewerHost && person.id === YOU_ID
+              const give =
+                inPerson &&
+                isViewerHost &&
+                person.id !== speakerId &&
+                person.id !== hostId
+              const nominate = person.id !== hostId && canNameHost
+              return (
+                <li key={person.id}>
+                  <span
+                    className="pi"
+                    style={{ '--c': person.color } as CSSProperties}
                   >
-                    Nommer hôte
-                  </button>
-                )
-              )}
-            </li>
-          ))}
-        </ul>
+                    {person.initials}
+                  </span>
+                  <span className="pn">
+                    <b>{person.name}</b>
+                    {person.id === YOU_ID && <small>vous</small>}
+                  </span>
+                  {person.id === hostId && <span className="pbadge">Hôte</span>}
+                  {inPerson && person.id === speakerId && (
+                    <span className="pbadge lecture">Lecture</span>
+                  )}
+                  {(reclaim || handBack || give || nominate) && (
+                    <span className="pacts">
+                      {reclaim && (
+                        <button
+                          className="nominate"
+                          onClick={() => onDelegate(person.id)}
+                        >
+                          Reprendre la lecture
+                        </button>
+                      )}
+                      {handBack && (
+                        <button
+                          className="nominate"
+                          onClick={() => onDelegate(hostId)}
+                        >
+                          Rendre la lecture
+                        </button>
+                      )}
+                      {give && (
+                        <button
+                          className="nominate"
+                          onClick={() => onDelegate(person.id)}
+                        >
+                          Donner la lecture
+                        </button>
+                      )}
+                      {nominate && (
+                        <button
+                          className="nominate"
+                          onClick={() => onNameHost(person.id)}
+                        >
+                          Nommer hôte
+                        </button>
+                      )}
+                    </span>
+                  )}
+                </li>
+              )
+            })}
+          </ul>
       </div>
     </footer>
   )

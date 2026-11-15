@@ -12,6 +12,8 @@ export type IconName =
   | 'like'
   | 'dislike'
   | 'logo'
+  | 'broadcast'
+  | 'speaker'
 
 type IconProps = {
   name: IconName
@@ -78,6 +80,17 @@ export function IconSprite() {
           strokeWidth="1.6"
           strokeLinecap="round"
         />
+      </symbol>
+      <symbol id="broadcast" viewBox="0 0 24 24">
+        <path d="M4.5 9.5a10 10 0 0 1 15 0" />
+        <path d="M7.5 12.5a6 6 0 0 1 9 0" />
+        <path d="M10.5 15.5a2.5 2.5 0 0 1 3 0" />
+        <path d="M12 19h.01" />
+      </symbol>
+      <symbol id="speaker" viewBox="0 0 24 24">
+        <path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4z" />
+        <path d="M15.5 9.5a4 4 0 0 1 0 5" />
+        <path d="M18 7a7.5 7.5 0 0 1 0 10" />
       </symbol>
     </svg>
   )
