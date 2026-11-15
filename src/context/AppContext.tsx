@@ -4,6 +4,7 @@ import { useAuth, useUser } from '@clerk/clerk-react'
 import { SEED_PARTICIPANTS } from '../data/participants'
 import type { Participant } from '../data/participants'
 import { SEED_TRACKS } from '../data/tracks'
+import { useRoomSocket } from '../hooks/useRoomSocket'
 import { AppContext, userFromClerkUser } from './app-context'
 import type { PlaybackMode, Room, Screen, User } from './app-context'
 
@@ -41,6 +42,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [screen, setScreen] = useState<Screen>('login')
   const [user, setUser] = useState<User | null>(null)
   const [room, setRoom] = useState<Room | null>(null)
+  const roomSocket = useRoomSocket(room?.code ?? null)
   const hasInitialized = useRef(false)
 
   useEffect(() => {
@@ -142,6 +144,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         user,
         userId: user?.id ?? null,
         room,
+        roomSocket,
         logout,
         createRoom,
         enterRoom,
