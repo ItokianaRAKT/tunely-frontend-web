@@ -15,12 +15,17 @@ if (!publishableKey) {
 }
 
 const clerkAppearance = {
+  baseTheme: undefined,
   elements: {
-    card: {
-      background: '#121619',
-      border: '1px solid rgba(148, 163, 184, 0.28)',
-      boxShadow: '0 20px 48px rgba(2, 6, 23, 0.48)',
+    cardBox: {
+      boxShadow: '0 20px 50px rgba(0, 0, 0, 0.6)',
       borderRadius: '16px',
+      border: '1px solid rgba(255, 255, 255, 0.2)',
+      overflow: 'hidden',
+    },
+    card: {
+      backgroundColor: '#ffffff',
+      borderRadius: '0px',
     },
   },
 }
