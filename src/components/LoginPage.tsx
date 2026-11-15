@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import {
-  SignInButton,
+  SignIn,
   SignedIn,
   SignedOut,
   UserButton,
@@ -8,6 +8,34 @@ import {
   useUser,
 } from '@clerk/clerk-react'
 import { Icon } from './Icon'
+
+const signInAppearance = {
+  elements: {
+    card: {
+      background: '#121619',
+      border: '1px solid rgba(148, 163, 184, 0.28)',
+      boxShadow: '0 20px 48px rgba(2, 6, 23, 0.48)',
+      borderRadius: '16px',
+    },
+    rootBox: {
+      width: '100%',
+    },
+    formButtonPrimary: {
+      backgroundColor: '#244cff',
+      color: '#f8fafc',
+      borderRadius: '10px',
+    },
+  },
+  variables: {
+    colorBackground: '#121619',
+    colorPrimary: '#244cff',
+    colorText: '#f8fafc',
+    colorTextOnPrimaryBackground: '#f8fafc',
+    colorInputBackground: '#0d1117',
+    colorInputText: '#f8fafc',
+    borderRadius: '12px',
+  },
+}
 
 export function LoginPage() {
   const { isLoaded } = useAuth()
@@ -32,11 +60,7 @@ export function LoginPage() {
         {showSignIn ? (
           <>
             <SignedOut>
-              <SignInButton mode="modal">
-                <button type="button" className="btn primary">
-                  Se connecter avec Clerk
-                </button>
-              </SignInButton>
+              <SignIn appearance={signInAppearance} />
             </SignedOut>
 
             <SignedIn>
