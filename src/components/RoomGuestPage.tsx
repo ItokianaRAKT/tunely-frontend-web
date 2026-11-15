@@ -11,7 +11,7 @@ import { SEED_TRACKS } from '../data/tracks'
 import { useApp } from '../context/app-context'
 
 export function RoomGuestPage() {
-  const { room, leaveRoom, dissolveRoom, setHost } = useApp()
+  const { room, leaveRoom, dissolveRoom, setHost, delegateSpeaker } = useApp()
   const participants = room?.participants ?? SEED_PARTICIPANTS
   const initialTracks = room?.initialTracks ?? SEED_TRACKS
   const [toast, setToast] = useState<{ text: string; icon?: IconName } | null>(null)
@@ -120,6 +120,18 @@ export function RoomGuestPage() {
   const canNameHost = hostId === YOU_ID
   const isOwner = room?.ownerId === YOU_ID
 
+  const handleDelegate = useCallback(
+    (id: string) => {
+      const target = participants.find((p) => p.id === id)
+      const givingBack = room?.speakerId === YOU_ID && id !== YOU_ID
+      delegateSpeaker(id)
+      if (id === YOU_ID) showToast('Lecture reprise · vous pilotez la musique')
+      else if (givingBack) showToast(`Lecture rendue à ${target?.name ?? 'l’hôte'}`)
+      else showToast(`Lecture donnée à ${target?.name ?? 'ce participant'}`)
+    },
+    [participants, room, delegateSpeaker, showToast],
+  )
+
   const dissolve = useCallback(() => {
     pausePlayback()
     dissolveRoom()
@@ -171,6 +183,7 @@ export function RoomGuestPage() {
           speakerId={room?.speakerId ?? SEED_PARTICIPANTS[0].id}
           canNameHost={canNameHost}
           onNameHost={nameHost}
+          onDelegate={handleDelegate}
         />
       </main>
 

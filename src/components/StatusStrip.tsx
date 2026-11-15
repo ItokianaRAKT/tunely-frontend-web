@@ -16,6 +16,7 @@ type StatusStripProps = {
   speakerId: string
   canNameHost: boolean
   onNameHost: (id: string) => void
+  onDelegate: (id: string) => void
 }
 
 export function StatusStrip({
@@ -28,6 +29,7 @@ export function StatusStrip({
   speakerId,
   canNameHost,
   onNameHost,
+  onDelegate,
 }: StatusStripProps) {
   const [listOpen, setListOpen] = useState(false)
   const wrapRef = useRef<HTMLDivElement>(null)
@@ -119,34 +121,72 @@ export function StatusStrip({
             <span className="more">+{participants.length - 3}</span>
           )}
         </button>
-        <ul className="plist" id="plist" hidden={!listOpen}>
-          {participants.map((person) => (
-            <li key={person.id}>
-              <span
-                className="pi"
-                style={{ '--c': person.color } as CSSProperties}
-              >
-                {person.initials}
-              </span>
-              <span className="pn">
-                <b>{person.name}</b>
-                {person.id === YOU_ID && <small>vous</small>}
-              </span>
-              {person.id === hostId && <span className="pbadge">Hôte</span>}
-              {playback === 'in-person' && person.id === speakerId && (
-                <span className="pbadge lecture">Lecture</span>
-              )}
-              {person.id !== hostId && canNameHost && (
-                <button
-                  className="nominate"
-                  onClick={() => onNameHost(person.id)}
-                >
-                  Nommer hôte
-                </button>
-              )}
-            </li>
-          ))}
-        </ul>
+          <ul className="plist" id="plist" hidden={!listOpen}>
+            {participants.map((person) => {
+              const isViewerHost = hostId === YOU_ID
+              const viewerHoldsLecture = speakerId === YOU_ID
+              const inPerson = playback === 'in-person'
+              const reclaim =
+                inPerson && isViewerHost && speakerId !== hostId && person.id === hostId
+              const handBack =
+                inPerson && viewerHoldsLecture && !isViewerHost && person.id === YOU_ID
+              const give =
+                inPerson &&
+                isViewerHost &&
+                person.id !== speakerId &&
+                person.id !== hostId
+              return (
+                <li key={person.id}>
+                  <span
+                    className="pi"
+                    style={{ '--c': person.color } as CSSProperties}
+                  >
+                    {person.initials}
+                  </span>
+                  <span className="pn">
+                    <b>{person.name}</b>
+                    {person.id === YOU_ID && <small>vous</small>}
+                  </span>
+                  {person.id === hostId && <span className="pbadge">Hôte</span>}
+                  {inPerson && person.id === speakerId && (
+                    <span className="pbadge lecture">Lecture</span>
+                  )}
+                  {reclaim && (
+                    <button
+                      className="nominate"
+                      onClick={() => onDelegate(person.id)}
+                    >
+                      Reprendre la lecture
+                    </button>
+                  )}
+                  {handBack && (
+                    <button
+                      className="nominate"
+                      onClick={() => onDelegate(hostId)}
+                    >
+                      Rendre la lecture
+                    </button>
+                  )}
+                  {give && (
+                    <button
+                      className="nominate"
+                      onClick={() => onDelegate(person.id)}
+                    >
+                      Donner la lecture
+                    </button>
+                  )}
+                  {person.id !== hostId && canNameHost && (
+                    <button
+                      className="nominate"
+                      onClick={() => onNameHost(person.id)}
+                    >
+                      Nommer hôte
+                    </button>
+                  )}
+                </li>
+              )
+            })}
+          </ul>
       </div>
     </footer>
   )
