@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import type { FormEvent } from 'react'
+import { Show, SignInButton, SignUpButton, UserButton } from '@clerk/react'
 import { Icon } from './Icon'
 import { useApp } from '../context/app-context'
 
@@ -27,6 +28,25 @@ export function LoginPage() {
           <h1>Tunely</h1>
         </div>
         <p className="auth-sub">The Listening Space</p>
+        <Show when="signed-out">
+          <div className="auth-cta">
+            <SignInButton mode="modal">
+              <button type="button" className="btn">
+                Se connecter
+              </button>
+            </SignInButton>
+            <SignUpButton mode="modal">
+              <button type="button" className="btn primary">
+                Créer un compte
+              </button>
+            </SignUpButton>
+          </div>
+        </Show>
+        <Show when="signed-in">
+          <div className="auth-user">
+            <UserButton />
+          </div>
+        </Show>
         <form onSubmit={handleSubmit} className="auth-form">
           <label>
             <span>Votre nom</span>
@@ -47,7 +67,7 @@ export function LoginPage() {
           </button>
         </form>
         <p className="auth-note">
-          Pas de mot de passe, pas de compte — juste un nom pour vous identifier.
+          Un nom suffit pour entrer — un compte reste optionnel.
         </p>
       </div>
     </div>
