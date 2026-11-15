@@ -1,9 +1,10 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
+import { useAuth, useUser } from '@clerk/react'
 import { SEED_PARTICIPANTS, YOU_ID } from '../data/participants'
 import type { Participant } from '../data/participants'
 import { SEED_TRACKS } from '../data/tracks'
-import { AppContext } from './app-context'
+import { AppContext, userFromClerkUser } from './app-context'
 import type { PlaybackMode, Room, Screen, User } from './app-context'
 
 const COLORS = ['#3b3d40', '#244cff', '#6a6b6d', '#8a8b8d', '#a5a6a8', '#c2c3c5']
@@ -31,29 +32,39 @@ function participantsFor(user: User): Participant[] {
 }
 
 export function AppProvider({ children }: { children: ReactNode }) {
+  const { isLoaded: authLoaded, isSignedIn, signOut } = useAuth()
+  const { user: clerkUser } = useUser()
+
   const [screen, setScreen] = useState<Screen>('login')
   const [user, setUser] = useState<User | null>(null)
   const [room, setRoom] = useState<Room | null>(null)
+  const hasInitialized = useRef(false)
 
-  const login = useCallback((name: string) => {
-    const parts = name.trim().split(/\s+/)
-    const initials =
-      parts.length > 1
-        ? `${parts[0][0]}${parts[1][0]}`.toUpperCase()
-        : parts[0].slice(0, 2).toUpperCase()
-    setUser({
-      name: parts.join(' '),
-      initials,
-      color: COLORS[Math.floor(Math.random() * COLORS.length)],
-    })
-    setScreen('home')
+  useEffect(() => {
+    if (!authLoaded) return
+    if (hasInitialized.current) return
+    hasInitialized.current = true
+
+    const nextUser =
+      isSignedIn && clerkUser
+        ? { ...userFromClerkUser(clerkUser), color: COLORS[Math.abs(clerkUser.id.length) % COLORS.length] }
+        : null
+    const nextScreen = isSignedIn && clerkUser ? 'home' : 'login'
+    setUser(nextUser)
+    setScreen(nextScreen)
+  }, [authLoaded, isSignedIn, clerkUser])
+
+  const login = useCallback(() => {
+    // Auth is now handled by Clerk; this remains in the context interface
+    // for compat but is not the path used by the app anymore.
   }, [])
 
   const logout = useCallback(() => {
+    void signOut()
     setUser(null)
     setRoom(null)
     setScreen('login')
-  }, [])
+  }, [signOut])
 
   const createRoom = useCallback(
     (playback: PlaybackMode) => {
