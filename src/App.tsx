@@ -1,3 +1,5 @@
+import { useEffect } from 'react'
+import { useUser } from '@clerk/react'
 import { useApp } from './context/app-context'
 import { IconSprite } from './components/Icon'
 import { LoginPage } from './components/LoginPage'
@@ -7,7 +9,17 @@ import { RoomGuestPage } from './components/RoomGuestPage'
 import './App.css'
 
 function App() {
-  const { screen } = useApp()
+  const { screen, login, logout } = useApp()
+  const { isLoaded, isSignedIn, user } = useUser()
+
+  useEffect(() => {
+    if (!isLoaded) return
+    if (isSignedIn && user && screen === 'login') {
+      login(user.fullName || user.username || user.firstName || 'Invité')
+    } else if (!isSignedIn && screen !== 'login') {
+      logout()
+    }
+  }, [isLoaded, isSignedIn, user, screen, login, logout])
 
   if (screen === 'login')
     return (
