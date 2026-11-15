@@ -7,12 +7,14 @@ import type { Vote } from './QueuePanel'
 import { StatusStrip } from './StatusStrip'
 import { AddTrackDialog } from './AddTrackDialog'
 import { usePlayer } from '../hooks/usePlayer'
+import { createBackendRoom, resolveVideoId } from '../api/tunely'
 import { SEED_PARTICIPANTS, YOU_ID } from '../data/participants'
 import { SEED_TRACKS } from '../data/tracks'
 import { useApp } from '../context/app-context'
 
 export function RoomHostPage() {
-  const { room, createRoom, leaveRoom, dissolveRoom, setHost } = useApp()
+  const { room, createRoom, leaveRoom, dissolveRoom, setHost, setBackendCode } =
+    useApp()
   const participants = room?.participants ?? SEED_PARTICIPANTS
   const initialTracks = room?.initialTracks ?? SEED_TRACKS
   const [toast, setToast] = useState<{ text: string; icon?: IconName } | null>(null)
@@ -28,6 +30,50 @@ export function RoomHostPage() {
     toastTimer.current = setTimeout(() => setToast(null), 2200)
   }, [])
 
+  const backendRoomRef = useRef<Promise<string | null> | null>(null)
+  const backendNoticeRef = useRef(false)
+  const youtubeNoticeRef = useRef(false)
+
+  const noticeBackendDown = useCallback(() => {
+    if (backendNoticeRef.current) return
+    backendNoticeRef.current = true
+    showToast('Backend injoignable · lecture simulée')
+  }, [showToast])
+
+  const ensureBackendRoom = useCallback(() => {
+    if (room?.backendCode) return Promise.resolve(room.backendCode)
+    if (!backendRoomRef.current) {
+      const label = room?.code ? `Tunely ${room.code}` : 'Tunely'
+      backendRoomRef.current = createBackendRoom(label).then((code) => {
+        if (!code) {
+          backendRoomRef.current = null
+          return null
+        }
+        setBackendCode(code)
+        return code
+      })
+    }
+    return backendRoomRef.current
+  }, [room, setBackendCode])
+
+  const adoptTrack = useCallback(
+    (target: { title: string; artist: string }) =>
+      ensureBackendRoom().then((code) => {
+        if (!code) {
+          noticeBackendDown()
+          return null
+        }
+        return resolveVideoId(code, target.title, target.artist).then((video) => {
+          if (video && !youtubeNoticeRef.current) {
+            youtubeNoticeRef.current = true
+            showToast('Lecture YouTube connectée')
+          }
+          return video
+        })
+      }),
+    [ensureBackendRoom, noticeBackendDown, showToast],
+  )
+
   const {
     tracks,
     track,
@@ -40,7 +86,7 @@ export function RoomHostPage() {
     addTrack,
     newIndex,
     pausePlayback,
-  } = usePlayer(showToast, initialTracks)
+  } = usePlayer(showToast, initialTracks, { youtube: true, adopt: adoptTrack })
 
   const handleNav = useCallback(
     (label: string) => {

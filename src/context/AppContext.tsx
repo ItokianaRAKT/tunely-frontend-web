@@ -101,6 +101,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     )
   }, [])
 
+  const setBackendCode = useCallback((code: string) => {
+    setRoom((current) =>
+      current ? { ...current, backendCode: code } : current,
+    )
+  }, [])
+
   return (
     <AppContext.Provider
       value={{
@@ -114,6 +120,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         leaveRoom,
         dissolveRoom,
         setHost,
+        setBackendCode,
       }}
     >
       {children}
