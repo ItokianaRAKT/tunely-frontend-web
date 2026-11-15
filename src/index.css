@@ -19,6 +19,7 @@
   --ui: 'Inter', system-ui, sans-serif;
   --mono: 'IBM Plex Mono', ui-monospace, monospace;
 
+  color-scheme: dark;
   box-sizing: border-box;
   padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);

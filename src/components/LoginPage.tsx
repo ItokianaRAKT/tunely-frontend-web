@@ -12,11 +12,22 @@ export function LoginPage() {
   const { user } = useUser()
   const [showSignIn, setShowSignIn] = useState(false)
 
-  useEffect(() => {
-    if (!isLoaded) return
-    const timer = setTimeout(() => setShowSignIn(true), 400)
-    return () => clearTimeout(timer)
-  }, [isLoaded])
+  // Without a router, Clerk's cross-flow links navigate to its hosted pages.
+  // Intercept them so the sign-in and sign-up flows both stay in the app.
+  const handleAuthLinkClick = (e: MouseEvent<HTMLDivElement>) => {
+    const anchor = (e.target as HTMLElement).closest('a')
+    if (!anchor) return
+    const href = anchor.getAttribute('href') ?? ''
+    if (href.includes('sign-up')) {
+      e.preventDefault()
+      e.stopPropagation()
+      setSigningUp(true)
+    } else if (href.includes('sign-in')) {
+      e.preventDefault()
+      e.stopPropagation()
+      setSigningUp(false)
+    }
+  }
 
   if (!isLoaded) {
     return (
@@ -38,7 +49,7 @@ export function LoginPage() {
           <SignIn appearance={signInAppearance} />
         )
       ) : (
-        <p className="auth-sub">Connexion en cours...</p>
+        <SignIn routing="hash" signUpUrl="#/sign-up" />
       )}
     </div>
   )
