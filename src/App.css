@@ -1200,16 +1200,6 @@ dialog .mode-pick > p {
   margin: 0 0 28px;
 }
 
-.auth-cta {
-  display: flex;
-  gap: 8px;
-}
-
-.auth-cta .btn {
-  flex: 1;
-  padding: 10px 12px;
-}
-
 .btn {
   padding: 12px 20px;
   border-radius: 3px;
