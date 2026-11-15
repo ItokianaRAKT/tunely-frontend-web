@@ -131,6 +131,7 @@ export function RoomGuestPage() {
       <main className={playing ? 'shell' : 'shell paused'} id="app">
         <Sidebar
           code={room?.code ?? '#7F3Q'}
+          playback={room?.playback ?? 'in-person'}
           canDissolve={isOwner}
           onCopy={copyCode}
           onCreate={() =>
@@ -166,6 +167,8 @@ export function RoomGuestPage() {
           upcoming={tracks[upcomingIndex]}
           participants={participants}
           hostId={hostId}
+          playback={room?.playback ?? 'in-person'}
+          speakerId={room?.speakerId ?? SEED_PARTICIPANTS[0].id}
           canNameHost={canNameHost}
           onNameHost={nameHost}
         />

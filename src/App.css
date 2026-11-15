@@ -104,6 +104,15 @@ svg.i {
   height: 12px;
 }
 
+.room .ptag {
+  display: block;
+  margin-top: 7px;
+  font: 400 9.5px var(--mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--conc);
+}
+
 .room .dissolve {
   display: inline-flex;
   align-items: center;
@@ -768,6 +777,7 @@ h2 {
 
 .plist li {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 10px;
   padding: 7px 8px;
@@ -818,6 +828,12 @@ h2 {
   border: 1px solid rgba(36, 76, 255, 0.55);
   border-radius: 10px;
   padding: 3px 7px;
+}
+
+.pbadge.lecture {
+  color: var(--chalk);
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(242, 240, 233, 0.4);
 }
 
 .nominate {

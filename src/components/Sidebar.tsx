@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { Icon, type IconName } from './Icon'
+import type { PlaybackMode } from '../context/app-context'
 
 type SidebarProps = {
   code: string
+  playback: PlaybackMode
   canDissolve?: boolean
   onCopy: () => void
   onCreate: () => void
@@ -17,6 +19,7 @@ const NAV_ITEMS: { label: string; icon: IconName }[] = [
 
 export function Sidebar({
   code,
+  playback,
   canDissolve = false,
   onCopy,
   onCreate,
@@ -55,6 +58,9 @@ export function Sidebar({
             <span>{code}</span>
             <Icon name="copy" />
           </button>
+          <small className="ptag">
+            {playback === 'remote' ? 'Remote' : 'Présentiel'}
+          </small>
           {canDissolve && onDissolve && (
             <button
               className={confirming ? 'dissolve confirm' : 'dissolve'}
