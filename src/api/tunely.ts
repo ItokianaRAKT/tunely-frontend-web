@@ -87,10 +87,15 @@ export async function proposeTrack(
   code: string,
   title: string,
   artist: string,
+  durationSeconds?: number,
 ): Promise<BackendTrack | null> {
   return call<BackendTrack>(`/rooms/${encodeURIComponent(code)}/tracks`, {
     method: 'POST',
-    body: { title, artist },
+    body: {
+      title,
+      artist,
+      ...(durationSeconds ? { duration_seconds: durationSeconds } : {}),
+    },
   })
 }
 
@@ -124,8 +129,9 @@ async function startTrack(
   code: string,
   title: string,
   artist: string,
+  durationSeconds?: number,
 ): Promise<AdoptedVideo | null> {
-  await proposeTrack(code, title, artist)
+  await proposeTrack(code, title, artist, durationSeconds)
   const started = await skipToNext(code)
   if (!started || !matches(started, title, artist)) return null
   return toVideo(started)
@@ -135,18 +141,21 @@ async function startTrack(
  * Resolve the YouTube video id of a local track through the backend.
  * Returns null whenever the backend is unreachable or its queue does not
  * line up with the local one, so callers can stay on simulated playback.
+ * When the caller knows the official duration of the track, it is stored on
+ * the proposal so the backend can filter InnerTube results against it.
  */
 export async function resolveVideoId(
   code: string,
   title: string,
   artist: string,
+  durationSeconds?: number,
 ): Promise<AdoptedVideo | null> {
   const current = await getCurrentTrack(code)
   if (current?.track) {
     if (matches(current.track, title, artist)) return toVideo(current.track)
     // The backend clock is on another track: propose the local one and let
     // the backend advance, adopting only on an exact title/artist match.
-    return startTrack(code, title, artist)
+    return startTrack(code, title, artist, durationSeconds)
   }
-  return startTrack(code, title, artist)
+  return startTrack(code, title, artist, durationSeconds)
 }
