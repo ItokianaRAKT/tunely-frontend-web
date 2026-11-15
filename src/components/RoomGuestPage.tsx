@@ -133,13 +133,13 @@ export function RoomGuestPage() {
   const handleDelegate = useCallback(
     (id: string) => {
       const target = participants.find((p) => p.id === id)
-      const givingBack = room?.speakerId === YOU_ID && id !== YOU_ID
+      const givingBack = id === hostId && id !== YOU_ID
       delegateSpeaker(id)
       if (id === YOU_ID) showToast('Lecture reprise · vous pilotez la musique')
       else if (givingBack) showToast(`Lecture rendue à ${target?.name ?? 'l’hôte'}`)
       else showToast(`Lecture donnée à ${target?.name ?? 'ce participant'}`)
     },
-    [participants, room, delegateSpeaker, showToast],
+    [participants, hostId, delegateSpeaker, showToast],
   )
 
   const dissolve = useCallback(() => {
