@@ -8,6 +8,7 @@ type Notify = (message: string) => void
 
 type PlayerOptions = {
   youtube?: boolean
+  shouldPlayAudio?: boolean
   adopt?: (track: Track) => Promise<AdoptedVideo | null>
 }
 
@@ -20,7 +21,7 @@ export function usePlayer(
   initialTracks: Track[],
   options: PlayerOptions = {},
 ) {
-  const { youtube = false, adopt } = options
+  const { youtube = false, shouldPlayAudio = true, adopt } = options
   const [tracks, setTracks] = useState(initialTracks)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [playing, setPlaying] = useState(initialTracks.length > 0)
@@ -104,7 +105,7 @@ export function usePlayer(
   }, [notify])
 
   const yt = useYouTubePlayer({
-    enabled: youtube,
+    enabled: youtube && shouldPlayAudio,
     onTick: handleTick,
     onEnded: () => {
       if (latestRef.current.track?.youtubeId) advanceTrack()

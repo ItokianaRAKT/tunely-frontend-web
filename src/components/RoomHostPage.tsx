@@ -18,6 +18,8 @@ export function RoomHostPage() {
   const {
     room,
     user,
+    userId,
+    roomSocket,
     getToken,
     createRoom,
     leaveRoom,
@@ -92,6 +94,12 @@ export function RoomHostPage() {
     [ensureBackendRoom, getToken, noticeBackendDown, showToast],
   )
 
+  const serverRoomState = roomSocket.serverRoomState
+  const shouldPlayAudio =
+    serverRoomState == null ? true :
+    serverRoomState.mode === 'REMOTE' ? true :
+    serverRoomState.playerUserId === userId
+
   const {
     tracks,
     track,
@@ -104,7 +112,11 @@ export function RoomHostPage() {
     addTrack,
     newIndex,
     pausePlayback,
-  } = usePlayer(showToast, initialTracks, { youtube: true, adopt: adoptTrack })
+  } = usePlayer(showToast, initialTracks, {
+    youtube: true,
+    shouldPlayAudio,
+    adopt: adoptTrack,
+  })
 
   const handleNav = useCallback(
     (label: string) => {
