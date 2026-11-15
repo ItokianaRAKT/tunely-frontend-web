@@ -27,6 +27,7 @@ export function AddTrackDialog({ open, onClose, onAdd }: AddTrackDialogProps) {
   const [results, setResults] = useState<ITunesTrack[]>([])
   const [picked, setPicked] = useState<ITunesTrack | null>(null)
   const [phase, setPhase] = useState<SearchPhase>('idle')
+  const [submitting, setSubmitting] = useState(false)
 
   // Clear the previous search when the dialog opens again.
   const [prevOpen, setPrevOpen] = useState(open)
@@ -92,8 +93,10 @@ export function AddTrackDialog({ open, onClose, onAdd }: AddTrackDialogProps) {
   const handleSubmit = () => {
     const cleanTitle = title.trim()
     const cleanArtist = artist.trim()
-    if (!cleanTitle || !cleanArtist) return
+    if (!cleanTitle || !cleanArtist || submitting) return
+
     const exact = picked && picked.title === cleanTitle && picked.artist === cleanArtist
+    setSubmitting(true)
     onAdd({
       title: cleanTitle,
       artist: cleanArtist,
@@ -111,8 +114,13 @@ export function AddTrackDialog({ open, onClose, onAdd }: AddTrackDialogProps) {
           ? 'Recherche iTunes indisponible · saisie manuelle'
           : null
 
+  const handleClose = () => {
+    setSubmitting(false)
+    onClose()
+  }
+
   return (
-    <dialog ref={dialogRef} onClose={onClose}>
+    <dialog ref={dialogRef} onClose={handleClose}>
       <form method="dialog" onSubmit={handleSubmit}>
         <h4>Ajouter un titre</h4>
         <label>
@@ -173,11 +181,11 @@ export function AddTrackDialog({ open, onClose, onAdd }: AddTrackDialogProps) {
           )}
         </div>
         <div className="acts">
-          <button type="button" className="btn" onClick={onClose}>
+          <button type="button" className="btn" onClick={handleClose} disabled={submitting}>
             Annuler
           </button>
-          <button type="submit" className="btn p">
-            Ajouter à la file
+          <button type="submit" className="btn p" disabled={submitting}>
+            {submitting ? 'Ajout…' : 'Ajouter à la file'}
           </button>
         </div>
       </form>

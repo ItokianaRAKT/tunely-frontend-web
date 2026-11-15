@@ -2,19 +2,30 @@ import { useEffect, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { Icon } from './Icon'
 import { Artwork } from './Artwork'
-import type { Track } from '../data/tracks'
 
 export type Vote = 'up' | 'down'
 
+type QueueTrackLike = {
+  id: string
+  title: string
+  artist: string
+  duration?: number
+  art?: string
+  gradient?: string
+  votes?: number
+}
+
 type QueuePanelProps = {
-  tracks: Track[]
+  tracks: QueueTrackLike[]
   currentIndex: number
   newIndex: number | null
   votes: Record<string, Vote>
+  skipVotes?: { count: number; required: number } | null
   canAdd?: boolean
   open: boolean
   onToggle: () => void
-  onVote: (index: number, vote: Vote) => void
+  onVote: (trackId: string, vote: Vote) => void
+  onVoteSkip: () => void
   onAdd: () => void
   onQuit: () => void
 }
@@ -24,10 +35,12 @@ export function QueuePanel({
   currentIndex,
   newIndex,
   votes,
+  skipVotes = null,
   canAdd = true,
   open,
   onToggle,
   onVote,
+  onVoteSkip,
   onAdd,
   onQuit,
 }: QueuePanelProps) {
@@ -77,13 +90,24 @@ export function QueuePanel({
           </button>
         )}
       </div>
+      {skipVotes && (
+        <div className="skipbar">
+          <button className="ghost" onClick={onVoteSkip}>
+            <Icon name="skip" />
+            Passer
+          </button>
+          <span>
+            {skipVotes.count}/{skipVotes.required}
+          </span>
+        </div>
+      )}
       <ul className="ql" id="ql" ref={listRef}>
         {tracks.length === 0 && (
           <li className="qempty">File vide · ajoutez un titre pour commencer</li>
         )}
         {tracks.map((track, index) => (
           <li
-            key={index}
+            key={track.id}
             className={index === newIndex ? 'new' : undefined}
           >
             <button
@@ -96,7 +120,7 @@ export function QueuePanel({
             >
               <span
                 className="th"
-                style={{ '--g': track.gradient } as CSSProperties}
+                style={{ '--g': track.gradient ?? 'linear-gradient(135deg,#d8d6cf,#3a3b3d 60%,#111315)' } as CSSProperties}
               >
                 <Artwork src={track.art} />
               </span>
@@ -117,16 +141,16 @@ export function QueuePanel({
                 <button
                   className="like"
                   aria-label={`Voter pour ${track.title}`}
-                  aria-pressed={votes[track.title] === 'up'}
-                  onClick={() => onVote(index, 'up')}
+                  aria-pressed={votes[track.id] === 'up'}
+                  onClick={() => onVote(track.id, 'up')}
                 >
                   <Icon name="like" />
                 </button>
                 <button
                   className="dislike"
                   aria-label={`Voter contre ${track.title}`}
-                  aria-pressed={votes[track.title] === 'down'}
-                  onClick={() => onVote(index, 'down')}
+                  aria-pressed={votes[track.id] === 'down'}
+                  onClick={() => onVote(track.id, 'down')}
                 >
                   <Icon name="dislike" />
                 </button>

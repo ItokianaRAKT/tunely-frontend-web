@@ -107,24 +107,35 @@ export function RoomGuestPage() {
   }, [pausePlayback, leaveRoom])
 
   const handleVote = useCallback(
-    (index: number, vote: Vote) => {
-      const title = tracks[index]?.title
-      if (!title) return
+    (trackId: string, vote: Vote) => {
+      const queueForVote = ((serverRoomState?.queue ?? tracks) as Array<{
+        id?: string
+        title: string
+        artist: string
+        duration?: number
+        durationSeconds?: number | null
+        art?: string
+      }>)
+      const target = queueForVote.find((item) => item.id === trackId)
+      if (!target) return
+
       setVotes((current) => {
-        if (current[title] === vote) {
-          showToast(`Vote retiré · ${title}`)
+        if (current[trackId] === vote) {
+          showToast(`Vote retiré · ${target.title}`)
           const next = { ...current }
-          delete next[title]
+          delete next[trackId]
           return next
         }
+
+        roomSocket.sendToggleVote(trackId)
         showToast(
-          `Vote enregistré · ${title}`,
+          `Vote enregistré · ${target.title}`,
           vote === 'up' ? 'like' : 'dislike',
         )
-        return { ...current, [title]: vote }
+        return { ...current, [trackId]: vote }
       })
     },
-    [tracks, showToast],
+    [roomSocket, serverRoomState?.queue, showToast, tracks],
   )
 
   const nameHost = useCallback(
@@ -169,6 +180,29 @@ export function RoomGuestPage() {
     dissolveRoom()
   }, [pausePlayback, dissolveRoom])
 
+  const queueEntries = ((serverRoomState?.queue.length ? serverRoomState.queue : tracks) as Array<{
+    id?: string
+    title: string
+    artist: string
+    duration?: number
+    durationSeconds?: number | null
+    art?: string
+  }>)
+
+  const queueTracks: Array<{ id: string; title: string; artist: string; duration?: number; art?: string }> =
+    queueEntries.map((track, index) => ({
+      id: track.id ?? `${track.title}-${index}`,
+      title: track.title,
+      artist: track.artist,
+      duration: track.durationSeconds ?? track.duration,
+      art: track.art,
+    }))
+
+  const handleVoteSkip = useCallback(() => {
+    roomSocket.sendVoteSkip()
+    showToast('Vote pour passer enregistré')
+  }, [roomSocket, showToast])
+
   return (
     <>
       <IconSprite />
@@ -195,14 +229,16 @@ export function RoomGuestPage() {
           onSeek={() => undefined}
         />
         <QueuePanel
-          tracks={tracks}
+          tracks={queueTracks}
           currentIndex={currentIndex}
           newIndex={newIndex}
           votes={votes}
+          skipVotes={serverRoomState?.skipVotes ?? null}
           canAdd={false}
           open={queueOpen}
           onToggle={() => setQueueOpen((value) => !value)}
           onVote={handleVote}
+          onVoteSkip={handleVoteSkip}
           onAdd={() => {}}
           onQuit={quitRoom}
         />
