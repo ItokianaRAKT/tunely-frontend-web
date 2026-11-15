@@ -9,6 +9,7 @@ type StageProps = {
   index: number
   time: number
   readOnly?: boolean
+  canTogglePlayback?: boolean
   banner?: string
   onTogglePlay: () => void
   onSeek: (seconds: number) => void
@@ -24,6 +25,7 @@ export function Stage({
   index,
   time,
   readOnly = false,
+  canTogglePlayback = false,
   banner,
   onTogglePlay,
   onSeek,
@@ -136,9 +138,9 @@ export function Stage({
             className="bar"
             ref={barRef}
             role="slider"
-            tabIndex={readOnly ? -1 : 0}
+            tabIndex={-1}
             aria-label="Progression"
-            aria-readonly={readOnly}
+            aria-readonly={true}
             aria-valuemin={0}
             aria-valuemax={track.duration}
             aria-valuenow={Math.floor(time)}
@@ -155,7 +157,7 @@ export function Stage({
             <span>{formatTime(time)}</span>
             <span>{formatTime(track.duration)}</span>
           </div>
-          {!readOnly && (
+          {canTogglePlayback && (
             <div className="ctl">
               <button
                 className="pp"

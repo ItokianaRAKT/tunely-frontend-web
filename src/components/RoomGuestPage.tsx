@@ -50,6 +50,17 @@ export function RoomGuestPage() {
   } = usePlayer(showToast, initialTracks, {
     youtube: true,
     shouldPlayAudio,
+    roomSync:
+      serverRoomState == null
+        ? null
+        : {
+            mode: serverRoomState.mode,
+            isPlaying: serverRoomState.isPlaying,
+            startAt: serverRoomState.startAt,
+            clockOffset: roomSocket.clockOffset,
+            pausedAtPosition: serverRoomState.pausedAtPosition ?? null,
+            serverTime: serverRoomState.serverTime,
+          },
   })
 
   const handleNav = useCallback(
@@ -179,10 +190,11 @@ export function RoomGuestPage() {
           track={track}
           index={currentIndex}
           time={time}
-          readOnly={!canControl}
+          readOnly={true}
+          canTogglePlayback={false}
           banner={stageBanner}
-          onTogglePlay={togglePlay}
-          onSeek={seekTo}
+          onTogglePlay={() => undefined}
+          onSeek={() => undefined}
         />
         <QueuePanel
           tracks={tracks}
