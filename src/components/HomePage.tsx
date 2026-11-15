@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import type { FormEvent } from 'react'
+import { UserButton } from '@clerk/react'
 import { Icon } from './Icon'
 import { ModeChoiceDialog } from './ModeChoiceDialog'
 import { useApp } from '../context/app-context'
@@ -38,6 +39,7 @@ export function HomePage() {
           </div>
         </div>
         <div className="home-actions">
+          <UserButton />
           <button className="btn ghost" onClick={logout}>
             Se déconnecter
           </button>
