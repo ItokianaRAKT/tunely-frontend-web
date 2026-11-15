@@ -12,7 +12,7 @@ const RECENT_ROOMS = [
 ]
 
 export function HomePage() {
-  const { user, createRoom, enterRoom, logout } = useApp()
+  const { user, createRoom, enterRoom } = useApp()
   const [joinCode, setJoinCode] = useState('')
   const [joinError, setJoinError] = useState(false)
   const [creating, setCreating] = useState(false)
@@ -40,9 +40,6 @@ export function HomePage() {
         </div>
         <div className="home-actions">
           <UserButton />
-          <button className="btn ghost" onClick={logout}>
-            Se déconnecter
-          </button>
           <button className="btn primary create-room" onClick={() => setCreating(true)}>
             <Icon name="plus" style={{ width: 16, height: 16 }} />
             Créer une Room
