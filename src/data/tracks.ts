@@ -4,6 +4,23 @@ export type Track = {
   duration: number
   gradient: string
   youtubeId?: string
+  /** Square artwork picked up from the iTunes search result. */
+  art?: string
+  /**
+   * The duration comes from the official iTunes release, not from the mock
+   * filler (180-300s) or a manual entry. Only such a duration may be sent
+   * to the backend as the expected length of the YouTube video.
+   */
+  official?: boolean
+}
+
+/** What the add-track dialog hands over to the room. */
+export type NewTrack = {
+  title: string
+  artist: string
+  /** Official duration in seconds, present only for iTunes selections. */
+  duration?: number
+  art?: string
 }
 
 export const GRADIENTS = [

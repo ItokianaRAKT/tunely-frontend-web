@@ -1,9 +1,11 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import { SEED_PARTICIPANTS, YOU_ID } from '../data/participants'
+import { useAuth, useUser } from '@clerk/clerk-react'
+import { SEED_PARTICIPANTS } from '../data/participants'
 import type { Participant } from '../data/participants'
 import { SEED_TRACKS } from '../data/tracks'
-import { AppContext } from './app-context'
+import { useRoomSocket } from '../hooks/useRoomSocket'
+import { AppContext, userFromClerkUser } from './app-context'
 import type { PlaybackMode, Room, Screen, User } from './app-context'
 
 const COLORS = ['#3b3d40', '#244cff', '#6a6b6d', '#8a8b8d', '#a5a6a8', '#c2c3c5']
@@ -23,37 +25,49 @@ function normalizeCode(value: string) {
 }
 
 function participantsFor(user: User): Participant[] {
-  return SEED_PARTICIPANTS.map((person) =>
-    person.id === YOU_ID
-      ? { ...person, name: user.name, initials: user.initials, color: user.color }
-      : person,
-  )
+  const me: Participant = {
+    id: user.id,
+    name: user.name,
+    initials: user.initials,
+    color: user.color,
+  }
+
+  return [me, ...SEED_PARTICIPANTS.filter((person) => person.id !== user.id)]
 }
 
 export function AppProvider({ children }: { children: ReactNode }) {
+  const { isLoaded: authLoaded, isSignedIn, signOut, getToken } = useAuth()
+  const { user: clerkUser } = useUser()
+
   const [screen, setScreen] = useState<Screen>('login')
   const [user, setUser] = useState<User | null>(null)
   const [room, setRoom] = useState<Room | null>(null)
+  const roomSocket = useRoomSocket(room?.code ?? null)
+  const hasInitialized = useRef(false)
 
-  const login = useCallback((name: string) => {
-    const parts = name.trim().split(/\s+/)
-    const initials =
-      parts.length > 1
-        ? `${parts[0][0]}${parts[1][0]}`.toUpperCase()
-        : parts[0].slice(0, 2).toUpperCase()
-    setUser({
-      name: parts.join(' '),
-      initials,
-      color: COLORS[Math.floor(Math.random() * COLORS.length)],
-    })
-    setScreen('home')
-  }, [])
+  useEffect(() => {
+    if (!authLoaded) return
+    if (hasInitialized.current) return
+    hasInitialized.current = true
+
+    const nextUser =
+      isSignedIn && clerkUser
+        ? {
+            ...userFromClerkUser(clerkUser),
+            color: COLORS[Math.abs(clerkUser.id.length) % COLORS.length],
+          }
+        : null
+    const nextScreen = isSignedIn && clerkUser ? 'home' : 'login'
+    setUser(nextUser)
+    setScreen(nextScreen)
+  }, [authLoaded, isSignedIn, clerkUser])
 
   const logout = useCallback(() => {
+    void signOut()
     setUser(null)
     setRoom(null)
     setScreen('login')
-  }, [])
+  }, [signOut])
 
   const createRoom = useCallback(
     (playback: PlaybackMode) => {
@@ -62,9 +76,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         code: buildCode(),
         playback,
         mode: 'host',
-        hostId: YOU_ID,
-        ownerId: YOU_ID,
-        speakerId: YOU_ID,
+        hostId: user.id,
+        ownerId: user.id,
+        speakerId: user.id,
         participants: participantsFor(user),
         initialTracks: [],
       })
@@ -76,7 +90,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const enterRoom = useCallback(
     (code: string, mode: 'host' | 'guest') => {
       if (!user) return
-      const hostId = mode === 'host' ? YOU_ID : SEED_PARTICIPANTS[0].id
+      const hostId = mode === 'host' ? user.id : SEED_PARTICIPANTS[0].id
       setRoom({
         code: normalizeCode(code),
         playback: 'in-person',
@@ -98,10 +112,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const dissolveRoom = useCallback(() => {
-    if (!room || room.ownerId !== YOU_ID) return
+    if (!room || !user || room.ownerId !== user.id) return
     setRoom(null)
     setScreen('home')
-  }, [room])
+  }, [room, user])
 
   const setHost = useCallback((participantId: string) => {
     setRoom((current) =>
@@ -128,8 +142,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       value={{
         screen,
         user,
+        userId: user?.id ?? null,
         room,
-        login,
+        roomSocket,
         logout,
         createRoom,
         enterRoom,
@@ -138,6 +153,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setHost,
         delegateSpeaker,
         setBackendCode,
+        getToken,
       }}
     >
       {children}
