@@ -119,6 +119,16 @@ export function RoomGuestPage() {
 
   const canNameHost = hostId === YOU_ID
   const isOwner = room?.ownerId === YOU_ID
+  const playbackMode = room?.playback ?? 'in-person'
+  const speakerId = room?.speakerId ?? SEED_PARTICIPANTS[0].id
+  const canControl =
+    playbackMode === 'remote' ? hostId === YOU_ID : speakerId === YOU_ID
+  const speakerName = participants.find((p) => p.id === speakerId)?.name
+  const stageBanner = canControl
+    ? undefined
+    : playbackMode === 'remote'
+      ? "Lecture seule · l'hôte contrôle la lecture"
+      : `Lecture sur le téléphone de ${speakerName ?? "l'hôte"}`
 
   const handleDelegate = useCallback(
     (id: string) => {
@@ -156,8 +166,8 @@ export function RoomGuestPage() {
           track={track}
           index={currentIndex}
           time={time}
-          readOnly
-          banner="Lecture seule · l'hôte contrôle la lecture"
+          readOnly={!canControl}
+          banner={stageBanner}
           onTogglePlay={togglePlay}
           onSeek={seekTo}
         />
