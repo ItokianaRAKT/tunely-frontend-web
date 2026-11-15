@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { GRADIENTS } from '../data/tracks'
-import type { Track } from '../data/tracks'
+import type { NewTrack, Track } from '../data/tracks'
 import type { AdoptedVideo } from '../api/tunely'
 import { useYouTubePlayer } from './useYouTubePlayer'
 
@@ -226,17 +226,29 @@ export function usePlayer(
   )
 
   const addTrack = useCallback(
-    (title: string, artist: string) => {
-      const duration = 180 + Math.floor(Math.random() * 121)
+    (input: NewTrack) => {
+      // iTunes selections carry the official length; manual entries get the
+      // mock filler and must never be reported back as an expected duration.
+      const duration = input.duration ?? 180 + Math.floor(Math.random() * 121)
       const gradient = GRADIENTS[tracks.length % GRADIENTS.length]
       const wasEmpty = tracks.length === 0
-      setTracks((list) => [...list, { title, artist, duration, gradient }])
+      setTracks((list) => [
+        ...list,
+        {
+          title: input.title,
+          artist: input.artist,
+          duration,
+          gradient,
+          art: input.art,
+          official: input.duration !== undefined,
+        },
+      ])
       setNewIndex(tracks.length)
       if (wasEmpty) {
         setTime(0)
         setPlaying(true)
       }
-      notify(`« ${title} » ajouté à la file`)
+      notify(`« ${input.title} » ajouté à la file`)
     },
     [tracks.length, notify],
   )

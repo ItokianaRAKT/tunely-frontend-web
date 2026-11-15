@@ -11,6 +11,7 @@ import { usePlayer } from '../hooks/usePlayer'
 import { createBackendRoom, resolveVideoId } from '../api/tunely'
 import { SEED_PARTICIPANTS, YOU_ID } from '../data/participants'
 import { SEED_TRACKS } from '../data/tracks'
+import type { NewTrack } from '../data/tracks'
 import { useApp } from '../context/app-context'
 
 export function RoomHostPage() {
@@ -131,8 +132,8 @@ export function RoomHostPage() {
   }, [code, showToast])
 
   const handleAddTrack = useCallback(
-    (title: string, artist: string) => {
-      addTrack(title, artist)
+    (input: NewTrack) => {
+      addTrack(input)
       setQueueOpen(true)
     },
     [addTrack],

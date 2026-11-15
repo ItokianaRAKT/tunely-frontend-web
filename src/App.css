@@ -930,6 +930,65 @@ dialog input {
   background: #3a5eff;
 }
 
+/* iTunes search results inside the add-track dialog */
+dialog .srch:empty {
+  display: none;
+}
+
+dialog .hint {
+  margin: -4px 0 14px;
+  font-size: 12.5px;
+  color: var(--conc);
+}
+
+dialog .results {
+  list-style: none;
+  margin: -4px 0 16px;
+  padding: 0;
+  max-height: 224px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+}
+
+dialog .results li + li {
+  border-top: 1px solid var(--line);
+}
+
+dialog .res {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  text-align: left;
+  color: var(--chalk);
+  transition: background 0.16s;
+}
+
+dialog .res:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+dialog .res.on {
+  background: rgba(36, 76, 255, 0.22);
+}
+
+dialog .res img {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border-radius: 2px;
+  object-fit: cover;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+dialog .res .dur {
+  flex: none;
+  font: 400 12px var(--mono);
+  color: var(--conc);
+}
+
 /* playback mode choice */
 dialog .mode-pick > p {
   margin: -8px 0 18px;
