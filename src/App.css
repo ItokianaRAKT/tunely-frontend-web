@@ -210,6 +210,15 @@ nav svg {
   transition: transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
+/* official artwork covers the scenery, under the readability gradient */
+.stage .cover {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .stage::after {
   content: '';
   position: absolute;
@@ -220,7 +229,7 @@ nav svg {
   pointer-events: none;
 }
 
-.stage > *:not(.art) {
+.stage > *:not(.art):not(.cover) {
   position: relative;
   z-index: 1;
 }
@@ -537,6 +546,15 @@ h2 {
   height: 18px;
   background: rgba(242, 240, 233, 0.14);
   backdrop-filter: blur(2px);
+}
+
+.th img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 2px;
 }
 
 .meta {
@@ -928,6 +946,65 @@ dialog input {
 
 .btn.p:hover {
   background: #3a5eff;
+}
+
+/* iTunes search results inside the add-track dialog */
+dialog .srch:empty {
+  display: none;
+}
+
+dialog .hint {
+  margin: -4px 0 14px;
+  font-size: 12.5px;
+  color: var(--conc);
+}
+
+dialog .results {
+  list-style: none;
+  margin: -4px 0 16px;
+  padding: 0;
+  max-height: 224px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+}
+
+dialog .results li + li {
+  border-top: 1px solid var(--line);
+}
+
+dialog .res {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  text-align: left;
+  color: var(--chalk);
+  transition: background 0.16s;
+}
+
+dialog .res:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+dialog .res.on {
+  background: rgba(36, 76, 255, 0.22);
+}
+
+dialog .res img {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border-radius: 2px;
+  object-fit: cover;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+dialog .res .dur {
+  flex: none;
+  font: 400 12px var(--mono);
+  color: var(--conc);
 }
 
 /* playback mode choice */

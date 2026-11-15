@@ -8,9 +8,10 @@ import { StatusStrip } from './StatusStrip'
 import { AddTrackDialog } from './AddTrackDialog'
 import { ModeChoiceDialog } from './ModeChoiceDialog'
 import { usePlayer } from '../hooks/usePlayer'
-import { createBackendRoom, resolveVideoId } from '../api/tunely'
+import { createBackendRoom, proposeTrack, resolveVideoId } from '../api/tunely'
 import { SEED_PARTICIPANTS, YOU_ID } from '../data/participants'
 import { SEED_TRACKS } from '../data/tracks'
+import type { NewTrack } from '../data/tracks'
 import { useApp } from '../context/app-context'
 
 export function RoomHostPage() {
@@ -59,13 +60,16 @@ export function RoomHostPage() {
   }, [room, setBackendCode])
 
   const adoptTrack = useCallback(
-    (target: { title: string; artist: string }) =>
+    (target: { title: string; artist: string; duration?: number; official?: boolean }) =>
       ensureBackendRoom().then((code) => {
         if (!code) {
           noticeBackendDown()
           return null
         }
-        return resolveVideoId(code, target.title, target.artist).then((video) => {
+        // Only an official (iTunes) duration may act as the expected length
+        // of the YouTube video; mock durations would filter out everything.
+        const expected = target.official ? target.duration : undefined
+        return resolveVideoId(code, target.title, target.artist, expected).then((video) => {
           if (video && !youtubeNoticeRef.current) {
             youtubeNoticeRef.current = true
             showToast('Lecture YouTube connectée')
@@ -131,11 +135,20 @@ export function RoomHostPage() {
   }, [code, showToast])
 
   const handleAddTrack = useCallback(
-    (title: string, artist: string) => {
-      addTrack(title, artist)
+    (input: NewTrack) => {
+      addTrack(input)
       setQueueOpen(true)
+      // Mirror the addition on the backend right away so the official
+      // duration is stored before the track ever reaches the T-20s lock.
+      void ensureBackendRoom().then((code) => {
+        if (!code) {
+          noticeBackendDown()
+          return
+        }
+        return proposeTrack(code, input.title, input.artist, input.duration)
+      })
     },
-    [addTrack],
+    [addTrack, ensureBackendRoom, noticeBackendDown],
   )
 
   const quitRoom = useCallback(() => {

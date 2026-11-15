@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { Icon } from './Icon'
+import { Artwork } from './Artwork'
 import type { Track } from '../data/tracks'
 import type { Participant } from '../data/participants'
 import { YOU_ID } from '../data/participants'
@@ -71,7 +72,9 @@ export function StatusStrip({
               <span
                 className="th"
                 style={{ '--g': upcoming.gradient } as CSSProperties}
-              />
+              >
+                <Artwork src={upcoming.art} />
+              </span>
               <div className="meta">
                 <b>{upcoming.title}</b>
                 <small>{upcoming.artist}</small>
