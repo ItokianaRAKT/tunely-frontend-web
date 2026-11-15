@@ -35,7 +35,8 @@ export type YouTubeController = {
   cue: (videoId: string) => void
   play: () => void
   pause: () => void
-  seek: (seconds: number) => void
+  seek: (seconds: number, allowSeekAhead?: boolean) => void
+  getCurrentTime: () => number
 }
 
 const STATE_ENDED = 0
@@ -216,16 +217,18 @@ export function useYouTubePlayer(options: PlayerOptions): YouTubeController | nu
     player.pauseVideo()
   }, [clearWatchdog])
 
-  const seek = useCallback((seconds: number) => {
+  const seek = useCallback((seconds: number, allowSeekAhead = true) => {
     const player = playerRef.current
     if (!player) {
       pendingRef.current.seek = seconds
       return
     }
-    player.seekTo(seconds, true)
+    player.seekTo(seconds, allowSeekAhead)
     const duration = player.getDuration()
     if (duration > 0) optionsRef.current.onTick(seconds, duration)
   }, [])
+
+  const getCurrentTime = useCallback(() => playerRef.current?.getCurrentTime() ?? 0, [])
 
   useEffect(() => {
     if (!enabled) return
@@ -245,7 +248,7 @@ export function useYouTubePlayer(options: PlayerOptions): YouTubeController | nu
   }, [enabled, clearWatchdog])
 
   return useMemo<YouTubeController | null>(
-    () => (enabled ? { cue, play, pause, seek } : null),
-    [enabled, cue, play, pause, seek],
+    () => (enabled ? { cue, play, pause, seek, getCurrentTime } : null),
+    [enabled, cue, play, pause, seek, getCurrentTime],
   )
 }

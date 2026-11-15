@@ -11,7 +11,8 @@ import { SEED_TRACKS } from '../data/tracks'
 import { useApp } from '../context/app-context'
 
 export function RoomGuestPage() {
-  const { room, user, leaveRoom, dissolveRoom, setHost, delegateSpeaker } = useApp()
+  const { room, user, userId, roomSocket, leaveRoom, dissolveRoom, setHost, delegateSpeaker } =
+    useApp()
   const participants = room?.participants ?? SEED_PARTICIPANTS
   const initialTracks = room?.initialTracks ?? SEED_TRACKS
   const meId = user?.id ?? ''
@@ -29,6 +30,12 @@ export function RoomGuestPage() {
     toastTimer.current = setTimeout(() => setToast(null), 2200)
   }, [])
 
+  const serverRoomState = roomSocket.serverRoomState
+  const shouldPlayAudio =
+    serverRoomState == null ? true :
+    serverRoomState.mode === 'REMOTE' ? true :
+    serverRoomState.playerUserId === userId
+
   const {
     tracks,
     track,
@@ -36,11 +43,23 @@ export function RoomGuestPage() {
     upcomingIndex,
     time,
     playing,
-    togglePlay,
-    seekTo,
     newIndex,
     pausePlayback,
-  } = usePlayer(showToast, initialTracks)
+  } = usePlayer(showToast, initialTracks, {
+    youtube: true,
+    shouldPlayAudio,
+    roomSync:
+      serverRoomState == null
+        ? null
+        : {
+            mode: serverRoomState.mode,
+            isPlaying: serverRoomState.isPlaying,
+            startAt: serverRoomState.startAt,
+            clockOffset: roomSocket.clockOffset,
+            pausedAtPosition: serverRoomState.pausedAtPosition ?? null,
+            serverTime: serverRoomState.serverTime,
+          },
+  })
 
   const handleNav = useCallback(
     (label: string) => {
@@ -169,10 +188,11 @@ export function RoomGuestPage() {
           track={track}
           index={currentIndex}
           time={time}
-          readOnly={!canControl}
+          readOnly={true}
+          canTogglePlayback={false}
           banner={stageBanner}
-          onTogglePlay={togglePlay}
-          onSeek={seekTo}
+          onTogglePlay={() => undefined}
+          onSeek={() => undefined}
         />
         <QueuePanel
           tracks={tracks}

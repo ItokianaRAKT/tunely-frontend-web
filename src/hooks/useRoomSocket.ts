@@ -46,6 +46,7 @@ export function useRoomSocket(roomCode?: string | null): UseRoomSocketResult {
           currentTrack: message.currentTrack,
           isPlaying: message.isPlaying,
           startAt: message.startAt,
+          pausedAtPosition: message.isPlaying ? null : null,
           skipVotes: message.skipVotes ?? null,
         })
         break
@@ -57,6 +58,7 @@ export function useRoomSocket(roomCode?: string | null): UseRoomSocketResult {
                 ...current,
                 isPlaying: true,
                 startAt: message.startAt,
+                pausedAtPosition: null,
                 serverTime: message.serverTime,
               }
             : current,
@@ -71,6 +73,7 @@ export function useRoomSocket(roomCode?: string | null): UseRoomSocketResult {
                 isPlaying: false,
                 serverTime: message.serverTime,
                 startAt: null,
+                pausedAtPosition: message.pausedAtPosition,
               }
             : current,
         )
