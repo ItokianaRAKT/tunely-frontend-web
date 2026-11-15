@@ -25,6 +25,7 @@ export type ServerRoomState = {
   } | null
   isPlaying: boolean
   startAt: number | null
+  pausedAtPosition?: number | null
   skipVotes?: {
     count: number
     required: number

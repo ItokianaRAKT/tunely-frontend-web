@@ -6,9 +6,19 @@ import { useYouTubePlayer } from './useYouTubePlayer'
 
 type Notify = (message: string) => void
 
+type RemoteSyncState = {
+  mode: 'PARTY' | 'REMOTE' | null
+  isPlaying: boolean
+  startAt: number | null
+  clockOffset: number
+  pausedAtPosition?: number | null
+  serverTime: number
+}
+
 type PlayerOptions = {
   youtube?: boolean
   shouldPlayAudio?: boolean
+  roomSync?: RemoteSyncState | null
   adopt?: (track: Track) => Promise<AdoptedVideo | null>
 }
 
@@ -21,7 +31,7 @@ export function usePlayer(
   initialTracks: Track[],
   options: PlayerOptions = {},
 ) {
-  const { youtube = false, shouldPlayAudio = true, adopt } = options
+  const { youtube = false, shouldPlayAudio = true, roomSync = null, adopt } = options
   const [tracks, setTracks] = useState(initialTracks)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [playing, setPlaying] = useState(initialTracks.length > 0)
@@ -171,6 +181,57 @@ export function usePlayer(
     if (startAt > 1) yt.seek(startAt)
     if (playing) yt.play()
   }, [yt, track?.youtubeId, playing])
+
+  useEffect(() => {
+    if (!roomSync || roomSync.mode !== 'REMOTE' || !track?.youtubeId || !shouldPlayAudio || !yt) {
+      return undefined
+    }
+
+    if (!roomSync.isPlaying || roomSync.startAt == null) {
+      if (typeof roomSync.pausedAtPosition === 'number') {
+        setTime(roomSync.pausedAtPosition)
+      }
+      setPlaying(false)
+      yt.pause()
+      return undefined
+    }
+
+    const targetPosition = ((Date.now() + roomSync.clockOffset) - roomSync.startAt) / 1000
+    const resolvedPosition = Math.max(0, targetPosition)
+    setTime(resolvedPosition)
+    setPlaying(true)
+
+    if (targetPosition < 0) {
+      const delayMs = Math.abs(targetPosition) * 1000
+      yt.cue(track.youtubeId)
+      const timer = window.setTimeout(() => {
+        yt.seek(0, true)
+        yt.play()
+      }, delayMs)
+      return () => window.clearTimeout(timer)
+    }
+
+    yt.seek(resolvedPosition, true)
+    yt.play()
+    return undefined
+  }, [roomSync, shouldPlayAudio, track?.youtubeId, yt])
+
+  useEffect(() => {
+    if (!roomSync || roomSync.mode !== 'REMOTE' || !track?.youtubeId || !shouldPlayAudio || !yt) {
+      return undefined
+    }
+    if (!roomSync.isPlaying || roomSync.startAt == null) return undefined
+
+    const interval = window.setInterval(() => {
+      const targetPosition = ((Date.now() + roomSync.clockOffset) - roomSync.startAt) / 1000
+      const currentTime = yt.getCurrentTime()
+      if (Math.abs(currentTime - targetPosition) > 1.5) {
+        yt.seek(Math.max(0, targetPosition), true)
+      }
+    }, 5000)
+
+    return () => window.clearInterval(interval)
+  }, [roomSync, shouldPlayAudio, track?.youtubeId, yt])
 
   useEffect(() => {
     if (!playing) return
