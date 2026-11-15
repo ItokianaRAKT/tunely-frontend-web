@@ -135,6 +135,7 @@ export function StatusStrip({
                 isViewerHost &&
                 person.id !== speakerId &&
                 person.id !== hostId
+              const nominate = person.id !== hostId && canNameHost
               return (
                 <li key={person.id}>
                   <span
@@ -151,37 +152,41 @@ export function StatusStrip({
                   {inPerson && person.id === speakerId && (
                     <span className="pbadge lecture">Lecture</span>
                   )}
-                  {reclaim && (
-                    <button
-                      className="nominate"
-                      onClick={() => onDelegate(person.id)}
-                    >
-                      Reprendre la lecture
-                    </button>
-                  )}
-                  {handBack && (
-                    <button
-                      className="nominate"
-                      onClick={() => onDelegate(hostId)}
-                    >
-                      Rendre la lecture
-                    </button>
-                  )}
-                  {give && (
-                    <button
-                      className="nominate"
-                      onClick={() => onDelegate(person.id)}
-                    >
-                      Donner la lecture
-                    </button>
-                  )}
-                  {person.id !== hostId && canNameHost && (
-                    <button
-                      className="nominate"
-                      onClick={() => onNameHost(person.id)}
-                    >
-                      Nommer hôte
-                    </button>
+                  {(reclaim || handBack || give || nominate) && (
+                    <span className="pacts">
+                      {reclaim && (
+                        <button
+                          className="nominate"
+                          onClick={() => onDelegate(person.id)}
+                        >
+                          Reprendre la lecture
+                        </button>
+                      )}
+                      {handBack && (
+                        <button
+                          className="nominate"
+                          onClick={() => onDelegate(hostId)}
+                        >
+                          Rendre la lecture
+                        </button>
+                      )}
+                      {give && (
+                        <button
+                          className="nominate"
+                          onClick={() => onDelegate(person.id)}
+                        >
+                          Donner la lecture
+                        </button>
+                      )}
+                      {nominate && (
+                        <button
+                          className="nominate"
+                          onClick={() => onNameHost(person.id)}
+                        >
+                          Nommer hôte
+                        </button>
+                      )}
+                    </span>
                   )}
                 </li>
               )
