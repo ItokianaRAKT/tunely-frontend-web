@@ -6,18 +6,21 @@ import { QueuePanel } from './QueuePanel'
 import type { Vote } from './QueuePanel'
 import { StatusStrip } from './StatusStrip'
 import { usePlayer } from '../hooks/usePlayer'
-import { SEED_PARTICIPANTS, YOU_ID } from '../data/participants'
+import { SEED_PARTICIPANTS } from '../data/participants'
 import { SEED_TRACKS } from '../data/tracks'
 import { useApp } from '../context/app-context'
 
 export function RoomGuestPage() {
-  const { room, leaveRoom, dissolveRoom, setHost, delegateSpeaker } = useApp()
+  const { room, user, leaveRoom, dissolveRoom, setHost, delegateSpeaker } = useApp()
   const participants = room?.participants ?? SEED_PARTICIPANTS
   const initialTracks = room?.initialTracks ?? SEED_TRACKS
+  const meId = user?.id ?? ''
+  const fallbackHostId = meId || SEED_PARTICIPANTS[1].id
+  const fallbackSpeakerId = meId || SEED_PARTICIPANTS[0].id
   const [toast, setToast] = useState<{ text: string; icon?: IconName } | null>(null)
   const [queueOpen, setQueueOpen] = useState(true)
   const [votes, setVotes] = useState<Record<string, Vote>>({})
-  const [hostId, setHostId] = useState(room?.hostId ?? SEED_PARTICIPANTS[1].id)
+  const [hostId, setHostId] = useState(room?.hostId ?? fallbackHostId)
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   const showToast = useCallback((message: string, icon?: IconName) => {
@@ -117,12 +120,12 @@ export function RoomGuestPage() {
     [hostId, participants, setHost, showToast],
   )
 
-  const canNameHost = hostId === YOU_ID
-  const isOwner = room?.ownerId === YOU_ID
+  const canNameHost = hostId === meId
+  const isOwner = room?.ownerId === meId
   const playbackMode = room?.playback ?? 'in-person'
-  const speakerId = room?.speakerId ?? SEED_PARTICIPANTS[0].id
+  const speakerId = room?.speakerId ?? fallbackSpeakerId
   const canControl =
-    playbackMode === 'remote' ? hostId === YOU_ID : speakerId === YOU_ID
+    playbackMode === 'remote' ? hostId === meId : speakerId === meId
   const speakerName = participants.find((p) => p.id === speakerId)?.name
   const stageBanner = canControl
     ? undefined
@@ -133,13 +136,13 @@ export function RoomGuestPage() {
   const handleDelegate = useCallback(
     (id: string) => {
       const target = participants.find((p) => p.id === id)
-      const givingBack = id === hostId && id !== YOU_ID
+      const givingBack = id === hostId && id !== meId
       delegateSpeaker(id)
-      if (id === YOU_ID) showToast('Lecture reprise · vous pilotez la musique')
+      if (id === meId) showToast('Lecture reprise · vous pilotez la musique')
       else if (givingBack) showToast(`Lecture rendue à ${target?.name ?? 'l’hôte'}`)
       else showToast(`Lecture donnée à ${target?.name ?? 'ce participant'}`)
     },
-    [participants, hostId, delegateSpeaker, showToast],
+    [participants, hostId, meId, delegateSpeaker, showToast],
   )
 
   const dissolve = useCallback(() => {
@@ -190,7 +193,8 @@ export function RoomGuestPage() {
           participants={participants}
           hostId={hostId}
           playback={room?.playback ?? 'in-person'}
-          speakerId={room?.speakerId ?? SEED_PARTICIPANTS[0].id}
+          speakerId={room?.speakerId ?? fallbackSpeakerId}
+          viewerId={meId}
           canNameHost={canNameHost}
           onNameHost={nameHost}
           onDelegate={handleDelegate}

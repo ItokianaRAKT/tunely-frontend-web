@@ -4,7 +4,6 @@ import { Icon } from './Icon'
 import { Artwork } from './Artwork'
 import type { Track } from '../data/tracks'
 import type { Participant } from '../data/participants'
-import { YOU_ID } from '../data/participants'
 import type { PlaybackMode } from '../context/app-context'
 
 type StatusStripProps = {
@@ -15,6 +14,7 @@ type StatusStripProps = {
   hostId: string
   playback: PlaybackMode
   speakerId: string
+  viewerId: string
   canNameHost: boolean
   onNameHost: (id: string) => void
   onDelegate: (id: string) => void
@@ -28,6 +28,7 @@ export function StatusStrip({
   hostId,
   playback,
   speakerId,
+  viewerId,
   canNameHost,
   onNameHost,
   onDelegate,
@@ -126,13 +127,13 @@ export function StatusStrip({
         </button>
           <ul className="plist" id="plist" hidden={!listOpen}>
             {participants.map((person) => {
-              const isViewerHost = hostId === YOU_ID
-              const viewerHoldsLecture = speakerId === YOU_ID
+              const isViewerHost = hostId === viewerId
+              const viewerHoldsLecture = speakerId === viewerId
               const inPerson = playback === 'in-person'
               const reclaim =
                 inPerson && isViewerHost && speakerId !== hostId && person.id === hostId
               const handBack =
-                inPerson && viewerHoldsLecture && !isViewerHost && person.id === YOU_ID
+                inPerson && viewerHoldsLecture && !isViewerHost && person.id === viewerId
               const give =
                 inPerson &&
                 isViewerHost &&
@@ -149,7 +150,7 @@ export function StatusStrip({
                   </span>
                   <span className="pn">
                     <b>{person.name}</b>
-                    {person.id === YOU_ID && <small>vous</small>}
+                    {person.id === viewerId && <small>vous</small>}
                   </span>
                   {person.id === hostId && <span className="pbadge">Hôte</span>}
                   {inPerson && person.id === speakerId && (
