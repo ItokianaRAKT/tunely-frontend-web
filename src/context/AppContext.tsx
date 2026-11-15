@@ -56,7 +56,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const createRoom = useCallback(
-    (playback: PlaybackMode = 'in-person') => {
+    (playback: PlaybackMode) => {
       if (!user) return
       setRoom({
         code: buildCode(),

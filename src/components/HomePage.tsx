@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Icon } from './Icon'
+import { ModeChoiceDialog } from './ModeChoiceDialog'
 import { useApp } from '../context/app-context'
 
 const RECENT_ROOMS = [
@@ -13,6 +14,7 @@ export function HomePage() {
   const { user, createRoom, enterRoom, logout } = useApp()
   const [joinCode, setJoinCode] = useState('')
   const [joinError, setJoinError] = useState(false)
+  const [creating, setCreating] = useState(false)
   const joinRef = useRef<HTMLInputElement>(null)
 
   const handleJoin = (e: FormEvent) => {
@@ -39,7 +41,7 @@ export function HomePage() {
           <button className="btn ghost" onClick={logout}>
             Se déconnecter
           </button>
-          <button className="btn primary create-room" onClick={() => createRoom()}>
+          <button className="btn primary create-room" onClick={() => setCreating(true)}>
             <Icon name="plus" style={{ width: 16, height: 16 }} />
             Créer une Room
           </button>
@@ -90,6 +92,15 @@ export function HomePage() {
           ))}
         </ul>
       </section>
+
+      <ModeChoiceDialog
+        open={creating}
+        onClose={() => setCreating(false)}
+        onChoose={(playback) => {
+          createRoom(playback)
+          setCreating(false)
+        }}
+      />
     </div>
   )
 }

@@ -30,7 +30,7 @@ export type AppContextValue = {
   room: Room | null
   login: (name: string) => void
   logout: () => void
-  createRoom: (playback?: PlaybackMode) => void
+  createRoom: (playback: PlaybackMode) => void
   enterRoom: (code: string, mode: 'host' | 'guest') => void
   leaveRoom: () => void
   dissolveRoom: () => void

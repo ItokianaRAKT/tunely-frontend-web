@@ -6,6 +6,7 @@ import { QueuePanel } from './QueuePanel'
 import type { Vote } from './QueuePanel'
 import { StatusStrip } from './StatusStrip'
 import { AddTrackDialog } from './AddTrackDialog'
+import { ModeChoiceDialog } from './ModeChoiceDialog'
 import { usePlayer } from '../hooks/usePlayer'
 import { createBackendRoom, resolveVideoId } from '../api/tunely'
 import { SEED_PARTICIPANTS, YOU_ID } from '../data/participants'
@@ -19,6 +20,7 @@ export function RoomHostPage() {
   const initialTracks = room?.initialTracks ?? SEED_TRACKS
   const [toast, setToast] = useState<{ text: string; icon?: IconName } | null>(null)
   const [adding, setAdding] = useState(false)
+  const [creating, setCreating] = useState(false)
   const [queueOpen, setQueueOpen] = useState(true)
   const [votes, setVotes] = useState<Record<string, Vote>>({})
   const [hostId, setHostId] = useState(room?.hostId ?? YOU_ID)
@@ -190,10 +192,7 @@ export function RoomHostPage() {
           code={room?.code ?? '#7F3Q'}
           canDissolve={isOwner}
           onCopy={copyCode}
-          onCreate={() => {
-            createRoom()
-            showToast('Nouvelle Room créée')
-          }}
+          onCreate={() => setCreating(true)}
           onNav={handleNav}
           onDissolve={dissolve}
         />
@@ -232,6 +231,16 @@ export function RoomHostPage() {
         open={adding}
         onClose={() => setAdding(false)}
         onAdd={handleAddTrack}
+      />
+
+      <ModeChoiceDialog
+        open={creating}
+        onClose={() => setCreating(false)}
+        onChoose={(playback) => {
+          createRoom(playback)
+          setCreating(false)
+          showToast('Nouvelle Room créée')
+        }}
       />
 
       <div

@@ -906,6 +906,59 @@ dialog input {
   background: #3a5eff;
 }
 
+/* playback mode choice */
+dialog .mode-pick > p {
+  margin: -8px 0 18px;
+  font-size: 13.5px;
+  color: var(--conc);
+}
+
+.mode-cards {
+  display: grid;
+  gap: 12px;
+}
+
+.mode-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 12px;
+  row-gap: 4px;
+  align-items: center;
+  text-align: left;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--chalk);
+  transition:
+    background 0.16s,
+    border-color 0.16s;
+}
+
+.mode-card svg {
+  grid-row: span 2;
+  width: 22px;
+  height: 22px;
+  color: var(--blue);
+}
+
+.mode-card b {
+  font: 700 15px var(--head);
+}
+
+.mode-card small {
+  grid-column: 2;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--conc);
+}
+
+.mode-card:hover {
+  background: rgba(36, 76, 255, 0.1);
+  border-color: rgba(36, 76, 255, 0.55);
+}
+
 /* toast */
 #toast {
   position: fixed;
