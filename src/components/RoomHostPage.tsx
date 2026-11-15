@@ -9,22 +9,25 @@ import { AddTrackDialog } from './AddTrackDialog'
 import { ModeChoiceDialog } from './ModeChoiceDialog'
 import { usePlayer } from '../hooks/usePlayer'
 import { createBackendRoom, proposeTrack, resolveVideoId } from '../api/tunely'
-import { SEED_PARTICIPANTS, YOU_ID } from '../data/participants'
+import { SEED_PARTICIPANTS } from '../data/participants'
 import { SEED_TRACKS } from '../data/tracks'
 import type { NewTrack } from '../data/tracks'
 import { useApp } from '../context/app-context'
 
 export function RoomHostPage() {
-  const { room, createRoom, leaveRoom, dissolveRoom, setHost, delegateSpeaker, setBackendCode } =
+  const { room, user, createRoom, leaveRoom, dissolveRoom, setHost, delegateSpeaker, setBackendCode } =
     useApp()
   const participants = room?.participants ?? SEED_PARTICIPANTS
   const initialTracks = room?.initialTracks ?? SEED_TRACKS
+  const meId = user?.id ?? ''
+  const fallbackHostId = meId || SEED_PARTICIPANTS[0].id
+  const fallbackSpeakerId = meId || SEED_PARTICIPANTS[0].id
   const [toast, setToast] = useState<{ text: string; icon?: IconName } | null>(null)
   const [adding, setAdding] = useState(false)
   const [creating, setCreating] = useState(false)
   const [queueOpen, setQueueOpen] = useState(true)
   const [votes, setVotes] = useState<Record<string, Vote>>({})
-  const [hostId, setHostId] = useState(room?.hostId ?? YOU_ID)
+  const [hostId, setHostId] = useState(room?.hostId ?? fallbackHostId)
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   const showToast = useCallback((message: string, icon?: IconName) => {
@@ -189,12 +192,12 @@ export function RoomHostPage() {
     [hostId, participants, setHost, showToast],
   )
 
-  const canNameHost = hostId === YOU_ID
-  const isOwner = room?.ownerId === YOU_ID
+  const canNameHost = hostId === meId
+  const isOwner = room?.ownerId === meId
   const playbackMode = room?.playback ?? 'in-person'
-  const speakerId = room?.speakerId ?? YOU_ID
+  const speakerId = room?.speakerId ?? fallbackSpeakerId
   const canControl =
-    playbackMode === 'remote' ? hostId === YOU_ID : speakerId === YOU_ID
+    playbackMode === 'remote' ? hostId === meId : speakerId === meId
   const speakerName = participants.find((p) => p.id === speakerId)?.name
   const stageBanner = canControl
     ? undefined
@@ -205,13 +208,13 @@ export function RoomHostPage() {
   const handleDelegate = useCallback(
     (id: string) => {
       const target = participants.find((p) => p.id === id)
-      const givingBack = id === hostId && id !== YOU_ID
+      const givingBack = id === hostId && id !== meId
       delegateSpeaker(id)
-      if (id === YOU_ID) showToast('Lecture reprise · vous pilotez la musique')
+      if (id === meId) showToast('Lecture reprise · vous pilotez la musique')
       else if (givingBack) showToast(`Lecture rendue à ${target?.name ?? 'l’hôte'}`)
       else showToast(`Lecture donnée à ${target?.name ?? 'ce participant'}`)
     },
-    [participants, hostId, delegateSpeaker, showToast],
+    [participants, hostId, meId, delegateSpeaker, showToast],
   )
 
   const dissolve = useCallback(() => {
@@ -260,7 +263,8 @@ export function RoomHostPage() {
           participants={participants}
           hostId={hostId}
           playback={room?.playback ?? 'in-person'}
-          speakerId={room?.speakerId ?? YOU_ID}
+          speakerId={room?.speakerId ?? fallbackSpeakerId}
+          viewerId={meId}
           canNameHost={canNameHost}
           onNameHost={nameHost}
           onDelegate={handleDelegate}

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import { useAuth, useUser } from '@clerk/react'
-import { SEED_PARTICIPANTS, YOU_ID } from '../data/participants'
+import { useAuth, useUser } from '@clerk/clerk-react'
+import { SEED_PARTICIPANTS } from '../data/participants'
 import type { Participant } from '../data/participants'
 import { SEED_TRACKS } from '../data/tracks'
 import { AppContext, userFromClerkUser } from './app-context'
@@ -24,11 +24,14 @@ function normalizeCode(value: string) {
 }
 
 function participantsFor(user: User): Participant[] {
-  return SEED_PARTICIPANTS.map((person) =>
-    person.id === YOU_ID
-      ? { ...person, name: user.name, initials: user.initials, color: user.color }
-      : person,
-  )
+  const me: Participant = {
+    id: user.id,
+    name: user.name,
+    initials: user.initials,
+    color: user.color,
+  }
+
+  return [me, ...SEED_PARTICIPANTS.filter((person) => person.id !== user.id)]
 }
 
 export function AppProvider({ children }: { children: ReactNode }) {
@@ -47,7 +50,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     const nextUser =
       isSignedIn && clerkUser
-        ? { ...userFromClerkUser(clerkUser), color: COLORS[Math.abs(clerkUser.id.length) % COLORS.length] }
+        ? {
+            ...userFromClerkUser(clerkUser),
+            color: COLORS[Math.abs(clerkUser.id.length) % COLORS.length],
+          }
         : null
     const nextScreen = isSignedIn && clerkUser ? 'home' : 'login'
     setUser(nextUser)
@@ -68,9 +74,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         code: buildCode(),
         playback,
         mode: 'host',
-        hostId: YOU_ID,
-        ownerId: YOU_ID,
-        speakerId: YOU_ID,
+        hostId: user.id,
+        ownerId: user.id,
+        speakerId: user.id,
         participants: participantsFor(user),
         initialTracks: [],
       })
@@ -82,7 +88,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const enterRoom = useCallback(
     (code: string, mode: 'host' | 'guest') => {
       if (!user) return
-      const hostId = mode === 'host' ? YOU_ID : SEED_PARTICIPANTS[0].id
+      const hostId = mode === 'host' ? user.id : SEED_PARTICIPANTS[0].id
       setRoom({
         code: normalizeCode(code),
         playback: 'in-person',
@@ -104,10 +110,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const dissolveRoom = useCallback(() => {
-    if (!room || room.ownerId !== YOU_ID) return
+    if (!room || !user || room.ownerId !== user.id) return
     setRoom(null)
     setScreen('home')
-  }, [room])
+  }, [room, user])
 
   const setHost = useCallback((participantId: string) => {
     setRoom((current) =>

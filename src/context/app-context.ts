@@ -7,6 +7,7 @@ export type Screen = 'login' | 'home' | 'room-host' | 'room-guest'
 export type PlaybackMode = 'remote' | 'in-person'
 
 export type User = {
+  id: string
   name: string
   initials: string
   color: string
@@ -48,7 +49,8 @@ export function useApp() {
 
 /**
  * Build the local `User` shape from a Clerk `User` object.
- * The app only needs a friendly display name, initials, and a stable color.
+ * The app only needs a friendly display name, initials, a stable color,
+ * and the unique Clerk user id for room ownership / permissions.
  */
 export function userFromClerkUser(user: {
   id: string
@@ -64,8 +66,9 @@ export function userFromClerkUser(user: {
       ? `${parts[0][0]}${parts[1][0]}`.toUpperCase()
       : parts[0].slice(0, 2).toUpperCase()
   return {
+    id: user.id,
     name,
     initials,
-    color: `#000000`,
+    color: '#000000',
   }
 }

@@ -28,6 +28,25 @@ type RequestOptions = {
   body?: unknown
 }
 
+export async function fetchWithClerkToken(
+  input: RequestInfo | URL,
+  getToken: () => Promise<string | null>,
+  init: RequestInit = {},
+): Promise<Response> {
+  const token = await getToken()
+  if (!token) {
+    throw new Error('Missing Clerk token for authenticated request')
+  }
+
+  const headers = new Headers(init.headers ?? {})
+  headers.set('Authorization', `Bearer ${token}`)
+
+  return fetch(input, {
+    ...init,
+    headers,
+  })
+}
+
 let token: string | null = null
 
 async function requestToken(): Promise<string | null> {

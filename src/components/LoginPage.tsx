@@ -1,18 +1,24 @@
 import { useEffect, useState } from 'react'
+import {
+  SignInButton,
+  SignedIn,
+  SignedOut,
+  UserButton,
+  useAuth,
+  useUser,
+} from '@clerk/clerk-react'
 import { Icon } from './Icon'
-import { RedirectToSignIn, useAuth } from '@clerk/react'
 
 export function LoginPage() {
-  const { isLoaded: authLoaded } = useAuth()
-  const [visible, setVisible] = useState(true)
+  const { isLoaded } = useAuth()
+  const { user } = useUser()
+  const [showSignIn, setShowSignIn] = useState(false)
 
   useEffect(() => {
-    if (!authLoaded) return
-    const timer = setTimeout(() => setVisible(false), 400)
+    if (!isLoaded) return
+    const timer = setTimeout(() => setShowSignIn(true), 400)
     return () => clearTimeout(timer)
-  }, [authLoaded])
-
-  if (!visible) return <RedirectToSignIn />
+  }, [isLoaded])
 
   return (
     <div className="auth">
@@ -22,9 +28,29 @@ export function LoginPage() {
           <h1>Tunely</h1>
         </div>
         <p className="auth-sub">The Listening Space</p>
-        <p className="auth-sub">
-          Redirection vers la connexion...
-        </p>
+
+        {showSignIn ? (
+          <>
+            <SignedOut>
+              <SignInButton mode="modal">
+                <button type="button" className="btn primary">
+                  Se connecter avec Clerk
+                </button>
+              </SignInButton>
+            </SignedOut>
+
+            <SignedIn>
+              <div className="auth-profile">
+                <UserButton />
+                <p className="auth-sub">
+                  Connecté en tant que {user?.fullName ?? 'utilisateur'}
+                </p>
+              </div>
+            </SignedIn>
+          </>
+        ) : (
+          <p className="auth-sub">Connexion en cours...</p>
+        )}
       </div>
     </div>
   )
