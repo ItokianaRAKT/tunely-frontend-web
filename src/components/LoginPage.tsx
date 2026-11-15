@@ -1,23 +1,14 @@
 import { useEffect, useState } from 'react'
-import {
-  SignIn,
-  SignedIn,
-  SignedOut,
-  UserButton,
-  useAuth,
-  useUser,
-} from '@clerk/clerk-react'
+import { SignIn, UserButton, useAuth, useUser } from '@clerk/react'
 import { dark } from '@clerk/themes'
 
-const signInAppearance = {
-  baseTheme:
-    typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches
-      ? dark
-      : undefined,
-}
+const signInAppearance =
+  typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches
+    ? dark
+    : undefined
 
 export function LoginPage() {
-  const { isLoaded } = useAuth()
+  const { isLoaded, isSignedIn } = useAuth()
   const { user } = useUser()
   const [showSignIn, setShowSignIn] = useState(false)
 
@@ -27,23 +18,25 @@ export function LoginPage() {
     return () => clearTimeout(timer)
   }, [isLoaded])
 
+  if (!isLoaded) {
+    return (
+      <div className="auth-shell">
+        <p className="auth-sub">Connexion en cours...</p>
+      </div>
+    )
+  }
+
   return (
     <div className="auth-shell">
       {showSignIn ? (
-        <>
-          <SignedOut>
-            <SignIn appearance={signInAppearance} />
-          </SignedOut>
-
-          <SignedIn>
-            <div className="auth-profile">
-              <UserButton />
-              <p className="auth-sub">
-                Connecté en tant que {user?.fullName ?? 'utilisateur'}
-              </p>
-            </div>
-          </SignedIn>
-        </>
+        isSignedIn && user ? (
+          <div className="auth-profile">
+            <UserButton />
+            <p className="auth-sub">Connecté en tant que {user.fullName ?? 'utilisateur'}</p>
+          </div>
+        ) : (
+          <SignIn appearance={signInAppearance} />
+        )
       ) : (
         <p className="auth-sub">Connexion en cours...</p>
       )}

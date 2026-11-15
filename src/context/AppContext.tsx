@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import { useAuth, useUser } from '@clerk/clerk-react'
+import { useAuth, useUser } from '@clerk/react'
 import { SEED_PARTICIPANTS } from '../data/participants'
 import type { Participant } from '../data/participants'
 import { SEED_TRACKS } from '../data/tracks'

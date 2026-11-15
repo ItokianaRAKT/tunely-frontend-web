@@ -1,6 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { ClerkProvider } from '@clerk/clerk-react'
+import { ClerkProvider } from '@clerk/react'
 import { dark } from '@clerk/themes'
 import './index.css'
 import App from './App.tsx'
@@ -15,12 +15,10 @@ if (!publishableKey) {
   )
 }
 
-const clerkAppearance = {
-  baseTheme:
-    typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches
-      ? dark
-      : undefined,
-}
+const clerkAppearance =
+  typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches
+    ? dark
+    : undefined
 
 const clerkLocalization = {
   signIn: {
