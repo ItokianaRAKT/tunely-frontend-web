@@ -54,11 +54,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setScreen(nextScreen)
   }, [authLoaded, isSignedIn, clerkUser])
 
-  const login = useCallback(() => {
-    // Auth is now handled by Clerk; this remains in the context interface
-    // for compat but is not the path used by the app anymore.
-  }, [])
-
   const logout = useCallback(() => {
     void signOut()
     setUser(null)
@@ -140,7 +135,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
         screen,
         user,
         room,
-        login,
         logout,
         createRoom,
         enterRoom,
