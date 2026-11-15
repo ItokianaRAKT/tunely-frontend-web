@@ -107,8 +107,6 @@ export function RoomHostPage() {
     upcomingIndex,
     time,
     playing,
-    togglePlay,
-    seekTo,
     addTrack,
     newIndex,
     pausePlayback,

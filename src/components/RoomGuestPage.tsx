@@ -43,8 +43,6 @@ export function RoomGuestPage() {
     upcomingIndex,
     time,
     playing,
-    togglePlay,
-    seekTo,
     newIndex,
     pausePlayback,
   } = usePlayer(showToast, initialTracks, {

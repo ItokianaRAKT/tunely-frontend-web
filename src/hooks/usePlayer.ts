@@ -222,8 +222,11 @@ export function usePlayer(
     }
     if (!roomSync.isPlaying || roomSync.startAt == null) return undefined
 
+    const startAt = roomSync.startAt
+    if (startAt == null) return undefined
+
     const interval = window.setInterval(() => {
-      const targetPosition = ((Date.now() + roomSync.clockOffset) - roomSync.startAt) / 1000
+      const targetPosition = ((Date.now() + roomSync.clockOffset) - startAt) / 1000
       const currentTime = yt.getCurrentTime()
       if (Math.abs(currentTime - targetPosition) > 1.5) {
         yt.seek(Math.max(0, targetPosition), true)
