@@ -35,7 +35,7 @@ function participantsFor(user: User): Participant[] {
 }
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const { isLoaded: authLoaded, isSignedIn, signOut } = useAuth()
+  const { isLoaded: authLoaded, isSignedIn, signOut, getToken } = useAuth()
   const { user: clerkUser } = useUser()
 
   const [screen, setScreen] = useState<Screen>('login')
@@ -140,6 +140,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       value={{
         screen,
         user,
+        userId: user?.id ?? null,
         room,
         logout,
         createRoom,
@@ -149,6 +150,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setHost,
         delegateSpeaker,
         setBackendCode,
+        getToken,
       }}
     >
       {children}

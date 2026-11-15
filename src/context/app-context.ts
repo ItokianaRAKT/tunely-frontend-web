@@ -28,6 +28,7 @@ export type Room = {
 export type AppContextValue = {
   screen: Screen
   user: User | null
+  userId: string | null
   room: Room | null
   logout: () => void
   createRoom: (playback: PlaybackMode) => void
@@ -37,6 +38,7 @@ export type AppContextValue = {
   setHost: (participantId: string) => void
   delegateSpeaker: (participantId: string) => void
   setBackendCode: (code: string) => void
+  getToken: () => Promise<string | null>
 }
 
 export const AppContext = createContext<AppContextValue | null>(null)

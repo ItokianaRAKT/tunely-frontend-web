@@ -15,8 +15,17 @@ import type { NewTrack } from '../data/tracks'
 import { useApp } from '../context/app-context'
 
 export function RoomHostPage() {
-  const { room, user, createRoom, leaveRoom, dissolveRoom, setHost, delegateSpeaker, setBackendCode } =
-    useApp()
+  const {
+    room,
+    user,
+    getToken,
+    createRoom,
+    leaveRoom,
+    dissolveRoom,
+    setHost,
+    delegateSpeaker,
+    setBackendCode,
+  } = useApp()
   const participants = room?.participants ?? SEED_PARTICIPANTS
   const initialTracks = room?.initialTracks ?? SEED_TRACKS
   const meId = user?.id ?? ''
@@ -50,7 +59,7 @@ export function RoomHostPage() {
     if (room?.backendCode) return Promise.resolve(room.backendCode)
     if (!backendRoomRef.current) {
       const label = room?.code ? `Tunely ${room.code}` : 'Tunely'
-      backendRoomRef.current = createBackendRoom(label).then((code) => {
+      backendRoomRef.current = createBackendRoom(getToken, label).then((code) => {
         if (!code) {
           backendRoomRef.current = null
           return null
@@ -60,7 +69,7 @@ export function RoomHostPage() {
       })
     }
     return backendRoomRef.current
-  }, [room, setBackendCode])
+  }, [getToken, room, setBackendCode])
 
   const adoptTrack = useCallback(
     (target: { title: string; artist: string; duration?: number; official?: boolean }) =>
@@ -72,7 +81,7 @@ export function RoomHostPage() {
         // Only an official (iTunes) duration may act as the expected length
         // of the YouTube video; mock durations would filter out everything.
         const expected = target.official ? target.duration : undefined
-        return resolveVideoId(code, target.title, target.artist, expected).then((video) => {
+        return resolveVideoId(getToken, code, target.title, target.artist, expected).then((video) => {
           if (video && !youtubeNoticeRef.current) {
             youtubeNoticeRef.current = true
             showToast('Lecture YouTube connectée')
@@ -80,7 +89,7 @@ export function RoomHostPage() {
           return video
         })
       }),
-    [ensureBackendRoom, noticeBackendDown, showToast],
+    [ensureBackendRoom, getToken, noticeBackendDown, showToast],
   )
 
   const {
@@ -148,10 +157,10 @@ export function RoomHostPage() {
           noticeBackendDown()
           return
         }
-        return proposeTrack(code, input.title, input.artist, input.duration)
+        return proposeTrack(getToken, code, input.title, input.artist, input.duration)
       })
     },
-    [addTrack, ensureBackendRoom, noticeBackendDown],
+    [addTrack, ensureBackendRoom, getToken, noticeBackendDown],
   )
 
   const quitRoom = useCallback(() => {
