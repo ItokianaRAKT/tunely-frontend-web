@@ -39,7 +39,7 @@ export function HomePage() {
           <button className="btn ghost" onClick={logout}>
             Se déconnecter
           </button>
-          <button className="btn primary create-room" onClick={createRoom}>
+          <button className="btn primary create-room" onClick={() => createRoom()}>
             <Icon name="plus" style={{ width: 16, height: 16 }} />
             Créer une Room
           </button>

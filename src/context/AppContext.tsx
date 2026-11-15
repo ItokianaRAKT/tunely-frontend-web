@@ -4,7 +4,7 @@ import { SEED_PARTICIPANTS, YOU_ID } from '../data/participants'
 import type { Participant } from '../data/participants'
 import { SEED_TRACKS } from '../data/tracks'
 import { AppContext } from './app-context'
-import type { Room, Screen, User } from './app-context'
+import type { PlaybackMode, Room, Screen, User } from './app-context'
 
 const COLORS = ['#3b3d40', '#244cff', '#6a6b6d', '#8a8b8d', '#a5a6a8', '#c2c3c5']
 const ALPHABET = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ'
@@ -55,27 +55,35 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setScreen('login')
   }, [])
 
-  const createRoom = useCallback(() => {
-    if (!user) return
-    setRoom({
-      code: buildCode(),
-      mode: 'host',
-      hostId: YOU_ID,
-      ownerId: YOU_ID,
-      participants: participantsFor(user),
-      initialTracks: [],
-    })
-    setScreen('room-host')
-  }, [user])
+  const createRoom = useCallback(
+    (playback: PlaybackMode = 'in-person') => {
+      if (!user) return
+      setRoom({
+        code: buildCode(),
+        playback,
+        mode: 'host',
+        hostId: YOU_ID,
+        ownerId: YOU_ID,
+        speakerId: YOU_ID,
+        participants: participantsFor(user),
+        initialTracks: [],
+      })
+      setScreen('room-host')
+    },
+    [user],
+  )
 
   const enterRoom = useCallback(
     (code: string, mode: 'host' | 'guest') => {
       if (!user) return
+      const hostId = mode === 'host' ? YOU_ID : SEED_PARTICIPANTS[0].id
       setRoom({
         code: normalizeCode(code),
+        playback: 'in-person',
         mode,
-        hostId: mode === 'host' ? YOU_ID : SEED_PARTICIPANTS[0].id,
-        ownerId: mode === 'host' ? YOU_ID : SEED_PARTICIPANTS[0].id,
+        hostId,
+        ownerId: hostId,
+        speakerId: hostId,
         participants: participantsFor(user),
         initialTracks: SEED_TRACKS,
       })
@@ -101,6 +109,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     )
   }, [])
 
+  const delegateSpeaker = useCallback((participantId: string) => {
+    setRoom((current) =>
+      current && current.playback === 'in-person'
+        ? { ...current, speakerId: participantId }
+        : current,
+    )
+  }, [])
+
   const setBackendCode = useCallback((code: string) => {
     setRoom((current) =>
       current ? { ...current, backendCode: code } : current,
@@ -120,6 +136,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         leaveRoom,
         dissolveRoom,
         setHost,
+        delegateSpeaker,
         setBackendCode,
       }}
     >

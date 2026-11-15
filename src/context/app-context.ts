@@ -4,6 +4,8 @@ import type { Track } from '../data/tracks'
 
 export type Screen = 'login' | 'home' | 'room-host' | 'room-guest'
 
+export type PlaybackMode = 'remote' | 'in-person'
+
 export type User = {
   name: string
   initials: string
@@ -12,9 +14,11 @@ export type User = {
 
 export type Room = {
   code: string
+  playback: PlaybackMode
   mode: 'host' | 'guest'
   hostId: string
   ownerId: string
+  speakerId: string
   participants: Participant[]
   initialTracks: Track[]
   backendCode?: string | null
@@ -26,11 +30,12 @@ export type AppContextValue = {
   room: Room | null
   login: (name: string) => void
   logout: () => void
-  createRoom: () => void
+  createRoom: (playback?: PlaybackMode) => void
   enterRoom: (code: string, mode: 'host' | 'guest') => void
   leaveRoom: () => void
   dissolveRoom: () => void
   setHost: (participantId: string) => void
+  delegateSpeaker: (participantId: string) => void
   setBackendCode: (code: string) => void
 }
 
