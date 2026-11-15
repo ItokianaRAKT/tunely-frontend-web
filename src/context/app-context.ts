@@ -1,6 +1,7 @@
 import { createContext, useContext } from 'react'
 import type { Participant } from '../data/participants'
 import type { Track } from '../data/tracks'
+import type { RoomSocketInstance } from '../hooks/useRoomSocket'
 
 export type Screen = 'login' | 'home' | 'room-host' | 'room-guest'
 
@@ -30,6 +31,7 @@ export type AppContextValue = {
   user: User | null
   userId: string | null
   room: Room | null
+  roomSocket: RoomSocketInstance
   logout: () => void
   createRoom: (playback: PlaybackMode) => void
   enterRoom: (code: string, mode: 'host' | 'guest') => void
