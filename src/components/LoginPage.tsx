@@ -1,9 +1,16 @@
-import { useState } from 'react'
-import type { MouseEvent } from 'react'
-import { SignIn, SignUp } from '@clerk/react'
+import { useEffect, useState } from 'react'
+import { SignIn, UserButton, useAuth, useUser } from '@clerk/react'
+import { dark } from '@clerk/themes'
+
+const signInAppearance =
+  typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches
+    ? dark
+    : undefined
 
 export function LoginPage() {
-  const [signingUp, setSigningUp] = useState(false)
+  const { isLoaded, isSignedIn } = useAuth()
+  const { user } = useUser()
+  const [showSignIn, setShowSignIn] = useState(false)
 
   // Without a router, Clerk's cross-flow links navigate to its hosted pages.
   // Intercept them so the sign-in and sign-up flows both stay in the app.
@@ -22,10 +29,25 @@ export function LoginPage() {
     }
   }
 
+  if (!isLoaded) {
+    return (
+      <div className="auth-shell">
+        <p className="auth-sub">Connexion en cours...</p>
+      </div>
+    )
+  }
+
   return (
-    <div className="auth" onClickCapture={handleAuthLinkClick}>
-      {signingUp ? (
-        <SignUp routing="hash" signInUrl="#/sign-in" />
+    <div className="auth-shell">
+      {showSignIn ? (
+        isSignedIn && user ? (
+          <div className="auth-profile">
+            <UserButton />
+            <p className="auth-sub">Connecté en tant que {user.fullName ?? 'utilisateur'}</p>
+          </div>
+        ) : (
+          <SignIn appearance={signInAppearance} />
+        )
       ) : (
         <SignIn routing="hash" signUpUrl="#/sign-up" />
       )}
