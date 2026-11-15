@@ -19,6 +19,7 @@ type UseRoomSocketResult = {
   sendAddTrack: (track: ServerRoomState['queue'][number]) => void
   sendToggleVote: (trackId: string) => void
   sendVoteSkip: () => void
+  sendUpdateRoomSettings: (mode?: RoomMode, playerUserId?: string | null) => void
 }
 
 export function useRoomSocket(roomCode?: string | null): UseRoomSocketResult {
@@ -180,6 +181,18 @@ export function useRoomSocket(roomCode?: string | null): UseRoomSocketResult {
     })
   }, [clockOffset, sendMessage])
 
+  const sendUpdateRoomSettings = useCallback(
+    (mode?: RoomMode, playerUserId?: string | null) => {
+      sendMessage({
+        type: 'UPDATE_ROOM_SETTINGS',
+        mode,
+        playerUserId,
+        serverTime: Date.now() + clockOffset,
+      })
+    },
+    [clockOffset, sendMessage],
+  )
+
   const disconnect = useCallback(() => {
     if (reconnectTimerRef.current) {
       window.clearTimeout(reconnectTimerRef.current)
@@ -276,6 +289,7 @@ export function useRoomSocket(roomCode?: string | null): UseRoomSocketResult {
     sendAddTrack,
     sendToggleVote,
     sendVoteSkip,
+    sendUpdateRoomSettings,
   }
 }
 

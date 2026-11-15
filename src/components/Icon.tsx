@@ -11,6 +11,7 @@ export type IconName =
   | 'chev'
   | 'like'
   | 'dislike'
+  | 'skip'
   | 'logo'
   | 'broadcast'
   | 'speaker'
@@ -46,6 +47,9 @@ export function IconSprite() {
       </symbol>
       <symbol id="dislike" viewBox="0 0 24 24">
         <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17" />
+      </symbol>
+      <symbol id="skip" viewBox="0 0 24 24">
+        <path d="M6 6v12M10 12l9-6v12l-9-6z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"  />
       </symbol>
       <symbol id="plus" viewBox="0 0 24 24">
         <path d="M12 5v14M5 12h14" />
