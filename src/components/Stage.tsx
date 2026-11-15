@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import type { KeyboardEvent, PointerEvent } from 'react'
 import { Icon } from './Icon'
+import { Artwork } from './Artwork'
 import type { Track } from '../data/tracks'
 
 type StageProps = {
@@ -109,6 +110,7 @@ export function Stage({
         <path d="M0 520V360a110 110 0 0 1 220 0v160z" fill="#0c0d0f" opacity="0.55" />
         <path d="M40 520V380a70 70 0 0 1 140 0v140z" fill="url(#beam)" />
       </svg>
+      <Artwork className="cover" src={track?.art} />
       <svg className="spark i" viewBox="0 0 46 96" aria-hidden="true">
         <path
           d="M23 0Q25 40 46 48Q25 56 23 96Q21 56 0 48Q21 40 23 0Z"

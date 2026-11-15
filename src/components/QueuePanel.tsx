@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { Icon } from './Icon'
+import { Artwork } from './Artwork'
 import type { Track } from '../data/tracks'
 
 export type Vote = 'up' | 'down'
@@ -96,7 +97,9 @@ export function QueuePanel({
               <span
                 className="th"
                 style={{ '--g': track.gradient } as CSSProperties}
-              />
+              >
+                <Artwork src={track.art} />
+              </span>
               <span className="meta">
                 <b>{track.title}</b>
                 <small>{track.artist}</small>
