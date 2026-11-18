@@ -198,6 +198,8 @@ export function RoomHostPage() {
   const handleAddTrack = useCallback(
     (input: NewTrack) => {
       const title = input.title.trim()
+      const artist = input.artist.trim()
+      const normalized = { ...input, title, artist }
       const trackId = `${Date.now()}-${Math.random().toString(16).slice(2)}`
       setQueueOpen(true)
       setAdding(false)
@@ -205,7 +207,7 @@ export function RoomHostPage() {
       const sent = roomSocket.sendAddTrack({
         id: trackId,
         title,
-        artist: input.artist.trim(),
+        artist,
         youtubeId: null,
         votes: 0,
         addedByUserId: userId ?? null,
@@ -213,8 +215,10 @@ export function RoomHostPage() {
       })
 
       if (sent) {
-        // The server owns the queue: QUEUE_SYNC / ROOM_STATE refresh it.
-        showToast(`« ${title} » ajouté à la file`)
+        // The server owns the queue (QUEUE_SYNC refreshes the panel), but
+        // the local list still drives the stage: mirror the addition so a
+        // fresh room is not stuck on an empty stage.
+        addTrack(normalized)
         return
       }
 
@@ -222,10 +226,10 @@ export function RoomHostPage() {
       void ensureBackendRoom()
         .then((code) => {
           if (!code) throw new Error('Backend unreachable')
-          return proposeTrack(getToken, code, input.title, input.artist, input.duration)
+          return proposeTrack(getToken, code, title, artist, input.duration)
         })
         .then(() => {
-          addTrack(input)
+          addTrack(normalized)
         })
         .catch(() => {
           showToast('Ajout impossible · serveur injoignable')
