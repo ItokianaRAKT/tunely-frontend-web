@@ -353,6 +353,13 @@ export function RoomHostPage() {
       art: track.art,
     }))
 
+  // The room state owns the "now playing" marker; fall back to the local
+  // player index while no server state is available.
+  const serverCurrentIndex = serverRoomState?.currentTrack
+    ? queueTracks.findIndex((item) => item.id === serverRoomState.currentTrack?.id)
+    : -1
+  const displayedIndex = serverCurrentIndex >= 0 ? serverCurrentIndex : currentIndex
+
   const handleVoteSkip = useCallback(() => {
     roomSocket.sendVoteSkip()
     showToast('Vote pour passer enregistré')
@@ -373,7 +380,7 @@ export function RoomHostPage() {
         />
         <Stage
           track={track}
-          index={currentIndex}
+          index={displayedIndex}
           time={time}
           readOnly={!canTogglePlayback}
           canTogglePlayback={canTogglePlayback}
@@ -383,7 +390,7 @@ export function RoomHostPage() {
         />
         <QueuePanel
           tracks={queueTracks}
-          currentIndex={currentIndex}
+          currentIndex={displayedIndex}
           newIndex={newIndex}
           votes={votes}
           skipVotes={serverRoomState?.skipVotes ?? null}
