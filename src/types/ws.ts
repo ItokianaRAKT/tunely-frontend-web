@@ -8,6 +8,7 @@ export type QueueTrack = {
   votes: number
   addedByUserId?: string | null
   durationSeconds?: number | null
+  art?: string | null
 }
 
 export type ServerRoomState = {
@@ -42,6 +43,7 @@ export type IncomingRoomStateMessage = {
   currentTrack: ServerRoomState['currentTrack']
   isPlaying: boolean
   startAt: number | null
+  pausedAtPosition?: number | null
   skipVotes?: {
     count: number
     required: number

@@ -3,12 +3,44 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type {
   IncomingWebSocketMessage,
   OutgoingWebSocketMessage,
+  QueueTrack,
   RoomMode,
   ServerRoomState,
   SocketStatus,
 } from '../types/ws'
 
-const DEFAULT_WS_URL = 'ws://localhost:8000/ws'
+const DEFAULT_WS_URL = 'ws://localhost:8000'
+
+// The backend serializes queue items with its own vocabulary
+// (videoId / score / artworkUrl); map it onto the client contract.
+type ServerQueueTrack = {
+  id?: string
+  title?: string
+  artist?: string
+  videoId?: string | null
+  youtubeId?: string | null
+  score?: number
+  votes?: number
+  artworkUrl?: string | null
+  art?: string | null
+  durationSeconds?: number | null
+}
+
+function normalizeQueue(queue: unknown): QueueTrack[] {
+  if (!Array.isArray(queue)) return []
+  return queue.map((raw) => {
+    const item = (typeof raw === 'object' && raw !== null ? raw : {}) as ServerQueueTrack
+    return {
+      id: item.id ?? '',
+      title: item.title ?? 'Titre inconnu',
+      artist: item.artist ?? 'Artiste inconnu',
+      youtubeId: item.youtubeId ?? item.videoId ?? null,
+      votes: item.votes ?? item.score ?? 0,
+      durationSeconds: item.durationSeconds ?? null,
+      art: item.art ?? item.artworkUrl ?? null,
+    }
+  })
+}
 
 type UseRoomSocketResult = {
   status: SocketStatus
@@ -16,7 +48,7 @@ type UseRoomSocketResult = {
   clockOffset: number
   sendPlay: (videoId: string, startAt: number) => void
   sendPause: (pausedAtPosition: number) => void
-  sendAddTrack: (track: ServerRoomState['queue'][number]) => void
+  sendAddTrack: (track: ServerRoomState['queue'][number]) => boolean
   sendToggleVote: (trackId: string) => void
   sendVoteSkip: () => void
   sendUpdateRoomSettings: (mode?: RoomMode, playerUserId?: string | null) => void
@@ -43,11 +75,11 @@ export function useRoomSocket(roomCode?: string | null): UseRoomSocketResult {
           mode: message.mode,
           hostId: message.hostId,
           playerUserId: message.playerUserId,
-          queue: message.queue,
+          queue: normalizeQueue(message.queue),
           currentTrack: message.currentTrack,
           isPlaying: message.isPlaying,
           startAt: message.startAt,
-          pausedAtPosition: message.isPlaying ? null : null,
+          pausedAtPosition: message.pausedAtPosition ?? null,
           skipVotes: message.skipVotes ?? null,
         })
         break
@@ -85,7 +117,7 @@ export function useRoomSocket(roomCode?: string | null): UseRoomSocketResult {
           current
             ? {
                 ...current,
-                queue: message.queue,
+                queue: normalizeQueue(message.queue),
                 serverTime: message.serverTime,
               }
             : current,
@@ -124,9 +156,17 @@ export function useRoomSocket(roomCode?: string | null): UseRoomSocketResult {
     }
   }, [])
 
-  const sendMessage = useCallback((message: OutgoingWebSocketMessage) => {
-    if (wsRef.current?.readyState !== WebSocket.OPEN) return
-    wsRef.current.send(JSON.stringify(message))
+  const sendMessage = useCallback((message: OutgoingWebSocketMessage): boolean => {
+    if (wsRef.current?.readyState !== WebSocket.OPEN) return false
+    if (message.type === 'ADD_TRACK') {
+      // The backend reads the track fields directly from `data`.
+      const { track, serverTime } = message
+      wsRef.current.send(JSON.stringify({ event: message.type, data: { ...track, serverTime } }))
+      return true
+    }
+    const { type, ...data } = message
+    wsRef.current.send(JSON.stringify({ event: type, data }))
+    return true
   }, [])
 
   const sendPlay = useCallback(
@@ -153,13 +193,12 @@ export function useRoomSocket(roomCode?: string | null): UseRoomSocketResult {
   )
 
   const sendAddTrack = useCallback(
-    (track: ServerRoomState['queue'][number]) => {
+    (track: ServerRoomState['queue'][number]): boolean =>
       sendMessage({
         type: 'ADD_TRACK',
         track,
         serverTime: Date.now() + clockOffset,
-      })
-    },
+      }),
     [clockOffset, sendMessage],
   )
 
@@ -242,7 +281,15 @@ export function useRoomSocket(roomCode?: string | null): UseRoomSocketResult {
 
     socket.onmessage = (event) => {
       try {
-        const message = JSON.parse(event.data) as IncomingWebSocketMessage
+        const raw = JSON.parse(event.data) as Record<string, unknown>
+        // The server wraps everything as { event, data }.
+        const message =
+          typeof raw.event === 'string'
+            ? ({
+                type: raw.event,
+                ...(typeof raw.data === 'object' && raw.data !== null ? raw.data : {}),
+              } as IncomingWebSocketMessage)
+            : (raw as IncomingWebSocketMessage)
         applyIncomingMessage(message)
       } catch {
         // ignore malformed payloads until the server contract is stabilized
