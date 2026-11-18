@@ -110,6 +110,7 @@ export function RoomHostPage() {
     playing,
     newIndex,
     pausePlayback,
+    seekTo,
     addTrack,
   } = usePlayer(showToast, initialTracks, {
     youtube: true,
@@ -144,6 +145,15 @@ export function RoomHostPage() {
     }
     roomSocket.sendPlay(track.youtubeId ?? '', Date.now() + roomSocket.clockOffset)
   }, [canTogglePlayback, roomSocket, serverRoomState?.isPlaying, time, track])
+
+  const handleSeek = useCallback(
+    (seconds: number) => {
+      if (!canTogglePlayback) return
+      seekTo(seconds)
+      roomSocket.sendHostSeek(seconds)
+    },
+    [canTogglePlayback, roomSocket, seekTo],
+  )
 
   const handleNav = useCallback(
     (label: string) => {
@@ -343,11 +353,11 @@ export function RoomHostPage() {
           track={track}
           index={currentIndex}
           time={time}
-          readOnly={true}
+          readOnly={!canTogglePlayback}
           canTogglePlayback={canTogglePlayback}
           banner={stageBanner}
           onTogglePlay={handleTogglePlay}
-          onSeek={() => undefined}
+          onSeek={handleSeek}
         />
         <QueuePanel
           tracks={queueTracks}

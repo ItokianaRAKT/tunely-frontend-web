@@ -140,7 +140,7 @@ export function Stage({
             role="slider"
             tabIndex={-1}
             aria-label="Progression"
-            aria-readonly={true}
+            aria-readonly={readOnly}
             aria-valuemin={0}
             aria-valuemax={track.duration}
             aria-valuenow={Math.floor(time)}
