@@ -365,6 +365,17 @@ export function RoomHostPage() {
     showToast('Vote pour passer enregistré')
   }, [roomSocket, showToast])
 
+  const handleRemoveTrack = useCallback(
+    (trackId: string) => {
+      const target = queueTracks.find((item) => item.id === trackId)
+      roomSocket.sendRemoveTrack(trackId)
+      showToast(
+        target ? `« ${target.title} » retiré de la file` : 'Titre retiré de la file',
+      )
+    },
+    [queueTracks, roomSocket, showToast],
+  )
+
   return (
     <>
       <IconSprite />
@@ -395,11 +406,13 @@ export function RoomHostPage() {
           votes={votes}
           skipVotes={serverRoomState?.skipVotes ?? null}
           canAdd
+          canRemove={canTogglePlayback}
           open={queueOpen}
           onToggle={() => setQueueOpen((value) => !value)}
           onVote={handleVote}
           onVoteSkip={handleVoteSkip}
           onAdd={() => setAdding(true)}
+          onRemove={handleRemoveTrack}
           onQuit={quitRoom}
         />
         <StatusStrip

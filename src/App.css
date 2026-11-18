@@ -657,6 +657,12 @@ h2 {
   height: 15px;
 }
 
+/* destructive action in the row menu */
+.vote button.rm:hover {
+  background: rgba(255, 107, 107, 0.12);
+  color: #ff6b6b;
+}
+
 @keyframes eq {
   to {
     transform: scaleY(0.35);

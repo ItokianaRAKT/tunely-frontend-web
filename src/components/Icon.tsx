@@ -12,6 +12,7 @@ export type IconName =
   | 'like'
   | 'dislike'
   | 'skip'
+  | 'trash'
   | 'logo'
   | 'broadcast'
   | 'speaker'
@@ -50,6 +51,16 @@ export function IconSprite() {
       </symbol>
       <symbol id="skip" viewBox="0 0 24 24">
         <path d="M6 6v12M10 12l9-6v12l-9-6z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"  />
+      </symbol>
+      <symbol id="trash" viewBox="0 0 24 24">
+        <path
+          d="M4 7h16M10 11v6M14 11v6M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       </symbol>
       <symbol id="plus" viewBox="0 0 24 24">
         <path d="M12 5v14M5 12h14" />
