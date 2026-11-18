@@ -225,7 +225,7 @@ export function useRoomSocket(roomCode?: string | null): UseRoomSocketResult {
 
     const wsBase = (import.meta.env.VITE_WS_URL as string | undefined) ?? DEFAULT_WS_URL
     const cleanCode = roomCode.replace(/^#/, '')
-    const socketUrl = `${wsBase.replace(/\/$/, '')}/ws/${cleanCode}?token=${encodeURIComponent(token)}`
+    const socketUrl = `${wsBase.replace(/\/$/, '')}/rooms/${cleanCode}/ws?token=${encodeURIComponent(token)}`
 
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       return
