@@ -143,8 +143,19 @@ export function RoomHostPage() {
       roomSocket.sendPause(time)
       return
     }
-    roomSocket.sendPlay(track.youtubeId ?? '', Date.now() + roomSocket.clockOffset)
-  }, [canTogglePlayback, roomSocket, serverRoomState?.isPlaying, time, track])
+    // Identify the played song on the server so it becomes the room's
+    // current track (protected from removal, advanced on skip).
+    const serverTrack = serverRoomState?.queue.find(
+      (item) =>
+        (track.youtubeId != null && item.youtubeId === track.youtubeId) ||
+        (item.title === track.title && item.artist === track.artist),
+    )
+    roomSocket.sendPlay(
+      track.youtubeId ?? '',
+      Date.now() + roomSocket.clockOffset,
+      serverTrack?.id || undefined,
+    )
+  }, [canTogglePlayback, roomSocket, serverRoomState, time, track])
 
   const handleSeek = useCallback(
     (seconds: number) => {
