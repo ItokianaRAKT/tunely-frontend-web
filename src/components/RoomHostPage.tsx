@@ -110,6 +110,7 @@ export function RoomHostPage() {
     playing,
     newIndex,
     pausePlayback,
+    togglePlay,
     seekTo,
     addTrack,
   } = usePlayer(showToast, initialTracks, {
@@ -139,8 +140,13 @@ export function RoomHostPage() {
   const canTogglePlayback = userId === (serverRoomState?.hostId ?? room?.hostId ?? userId)
   const handleTogglePlay = useCallback(() => {
     if (!canTogglePlayback || !track) return
-    if (serverRoomState?.isPlaying) {
+    // In PARTY mode the server never drives the local player, so the host's
+    // command must be applied locally as well (fall back to the local state
+    // when no backend room is connected).
+    const shouldPause = serverRoomState ? serverRoomState.isPlaying : playing
+    if (shouldPause) {
       roomSocket.sendPause(time)
+      if (playing) pausePlayback()
       return
     }
     // Identify the played song on the server so it becomes the room's
@@ -155,7 +161,8 @@ export function RoomHostPage() {
       Date.now() + roomSocket.clockOffset,
       serverTrack?.id || undefined,
     )
-  }, [canTogglePlayback, roomSocket, serverRoomState, time, track])
+    if (!playing) togglePlay()
+  }, [canTogglePlayback, pausePlayback, playing, roomSocket, serverRoomState, time, togglePlay, track])
 
   const handleSeek = useCallback(
     (seconds: number) => {
