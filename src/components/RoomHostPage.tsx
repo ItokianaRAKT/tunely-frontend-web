@@ -110,6 +110,7 @@ export function RoomHostPage() {
     playing,
     newIndex,
     pausePlayback,
+    addTrack,
   } = usePlayer(showToast, initialTracks, {
     youtube: true,
     shouldPlayAudio,
@@ -186,28 +187,41 @@ export function RoomHostPage() {
 
   const handleAddTrack = useCallback(
     (input: NewTrack) => {
+      const title = input.title.trim()
       const trackId = `${Date.now()}-${Math.random().toString(16).slice(2)}`
-      roomSocket.sendAddTrack({
+      setQueueOpen(true)
+      setAdding(false)
+
+      const sent = roomSocket.sendAddTrack({
         id: trackId,
-        title: input.title.trim(),
+        title,
         artist: input.artist.trim(),
         youtubeId: null,
         votes: 0,
         addedByUserId: userId ?? null,
         durationSeconds: input.duration ?? null,
       })
-      showToast(`« ${input.title.trim()} » ajouté à la file`)
-      setQueueOpen(true)
-      setAdding(false)
-      void ensureBackendRoom().then((code) => {
-        if (!code) {
-          noticeBackendDown()
-          return
-        }
-        return proposeTrack(getToken, code, input.title, input.artist, input.duration)
-      })
+
+      if (sent) {
+        // The server owns the queue: QUEUE_SYNC / ROOM_STATE refresh it.
+        showToast(`« ${title} » ajouté à la file`)
+        return
+      }
+
+      // Socket unavailable: mirror through REST and report the real outcome.
+      void ensureBackendRoom()
+        .then((code) => {
+          if (!code) throw new Error('Backend unreachable')
+          return proposeTrack(getToken, code, input.title, input.artist, input.duration)
+        })
+        .then(() => {
+          addTrack(input)
+        })
+        .catch(() => {
+          showToast('Ajout impossible · serveur injoignable')
+        })
     },
-    [ensureBackendRoom, getToken, noticeBackendDown, roomSocket, showToast, userId],
+    [addTrack, ensureBackendRoom, getToken, roomSocket, showToast, userId],
   )
 
   const quitRoom = useCallback(() => {
