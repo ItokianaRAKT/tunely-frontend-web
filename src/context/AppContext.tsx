@@ -42,7 +42,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [screen, setScreen] = useState<Screen>('login')
   const [user, setUser] = useState<User | null>(null)
   const [room, setRoom] = useState<Room | null>(null)
-  const roomSocket = useRoomSocket(room?.code ?? null)
+  // Prefer the real backend room code once it is known: the locally
+  // generated codes (e.g. "#7F3Q") do not exist on the server.
+  const roomSocket = useRoomSocket(room?.backendCode ?? room?.code ?? null)
   const hasInitialized = useRef(false)
 
   useEffect(() => {
