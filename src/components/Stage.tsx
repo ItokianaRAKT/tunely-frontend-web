@@ -13,6 +13,7 @@ type StageProps = {
   banner?: string
   onTogglePlay: () => void
   onSeek: (seconds: number) => void
+  onSkip?: () => void
 }
 
 function formatTime(seconds: number) {
@@ -29,6 +30,7 @@ export function Stage({
   banner,
   onTogglePlay,
   onSeek,
+  onSkip,
 }: StageProps) {
   const barRef = useRef<HTMLDivElement>(null)
   const progress = track ? Math.min(1, time / track.duration) * 100 : 0
@@ -172,6 +174,15 @@ export function Stage({
                   <path d="M8 5v14l11-7z" />
                 </svg>
               </button>
+              {onSkip && (
+                <button
+                  className="skipb"
+                  aria-label="Passer la chanson"
+                  onClick={onSkip}
+                >
+                  <Icon name="skip" />
+                </button>
+              )}
             </div>
           )}
         </>

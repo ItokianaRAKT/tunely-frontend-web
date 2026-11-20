@@ -111,6 +111,7 @@ export function RoomHostPage() {
     newIndex,
     pausePlayback,
     togglePlay,
+    skipTrack,
     seekTo,
     addTrack,
   } = usePlayer(showToast, initialTracks, {
@@ -376,6 +377,13 @@ export function RoomHostPage() {
     [queueTracks, roomSocket, showToast],
   )
 
+  const handleSkip = useCallback(() => {
+    if (!canTogglePlayback) return
+    roomSocket.sendHostSkip()
+    skipTrack()
+    showToast('Chanson passée')
+  }, [canTogglePlayback, roomSocket, skipTrack, showToast])
+
   return (
     <>
       <IconSprite />
@@ -398,6 +406,7 @@ export function RoomHostPage() {
           banner={stageBanner}
           onTogglePlay={handleTogglePlay}
           onSeek={handleSeek}
+          onSkip={handleSkip}
         />
         <QueuePanel
           tracks={queueTracks}
