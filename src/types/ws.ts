@@ -1,5 +1,12 @@
 export type RoomMode = 'PARTY' | 'REMOTE'
 
+export type RoomParticipant = {
+  id: number
+  username: string
+  role: string
+  userId?: string | null
+}
+
 export type QueueTrack = {
   id: string
   title: string
@@ -31,6 +38,7 @@ export type ServerRoomState = {
     count: number
     required: number
   } | null
+  participants: RoomParticipant[]
 }
 
 export type IncomingRoomStateMessage = {
@@ -48,6 +56,7 @@ export type IncomingRoomStateMessage = {
     count: number
     required: number
   } | null
+  participants?: RoomParticipant[]
 }
 
 export type IncomingSyncPlayMessage = {
@@ -95,12 +104,36 @@ export type OutgoingHostPlayMessage = {
   type: 'HOST_PLAY'
   videoId: string
   startAt: number
+  trackId?: string
   serverTime: number
 }
 
 export type OutgoingHostPauseMessage = {
   type: 'HOST_PAUSE'
   pausedAtPosition: number
+  serverTime: number
+}
+
+export type OutgoingHostSeekMessage = {
+  type: 'HOST_SEEK'
+  position: number
+  serverTime: number
+}
+
+export type OutgoingRemoveTrackMessage = {
+  type: 'REMOVE_TRACK'
+  trackId: string
+  serverTime: number
+}
+
+export type OutgoingHostSkipMessage = {
+  type: 'HOST_SKIP'
+  serverTime: number
+}
+
+export type OutgoingKickParticipantMessage = {
+  type: 'KICK_PARTICIPANT'
+  username: string
   serverTime: number
 }
 
@@ -131,6 +164,10 @@ export type OutgoingUpdateRoomSettingsMessage = {
 export type OutgoingWebSocketMessage =
   | OutgoingHostPlayMessage
   | OutgoingHostPauseMessage
+  | OutgoingHostSeekMessage
+  | OutgoingRemoveTrackMessage
+  | OutgoingHostSkipMessage
+  | OutgoingKickParticipantMessage
   | OutgoingAddTrackMessage
   | OutgoingToggleVoteMessage
   | OutgoingVoteSkipMessage

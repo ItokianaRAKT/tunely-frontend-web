@@ -327,6 +327,7 @@ export function usePlayer(
     playing,
     togglePlay,
     pausePlayback,
+    skipTrack: advanceTrack,
     seekTo,
     addTrack,
     newIndex,

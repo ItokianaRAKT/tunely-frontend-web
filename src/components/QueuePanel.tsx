@@ -21,12 +21,15 @@ type QueuePanelProps = {
   newIndex: number | null
   votes: Record<string, Vote>
   skipVotes?: { count: number; required: number } | null
+  participantCount: number
   canAdd?: boolean
+  canRemove?: boolean
   open: boolean
   onToggle: () => void
   onVote: (trackId: string, vote: Vote) => void
   onVoteSkip: () => void
   onAdd: () => void
+  onRemove?: (trackId: string) => void
   onQuit: () => void
 }
 
@@ -36,12 +39,15 @@ export function QueuePanel({
   newIndex,
   votes,
   skipVotes = null,
+  participantCount,
   canAdd = true,
+  canRemove = false,
   open,
   onToggle,
   onVote,
   onVoteSkip,
   onAdd,
+  onRemove,
   onQuit,
 }: QueuePanelProps) {
   const listRef = useRef<HTMLUListElement>(null)
@@ -63,7 +69,7 @@ export function QueuePanel({
       <div className="who">
         <span>
           <Icon name="users" />
-          4 participants
+          {participantCount} participant{participantCount > 1 ? 's' : ''}
         </span>
         <button className="ghost" onClick={onQuit}>
           <Icon name="exit" />
@@ -154,6 +160,15 @@ export function QueuePanel({
                 >
                   <Icon name="dislike" />
                 </button>
+                {canRemove && onRemove && index !== currentIndex && (
+                  <button
+                    className="rm"
+                    aria-label={`Retirer ${track.title} de la file`}
+                    onClick={() => onRemove(track.id)}
+                  >
+                    <Icon name="trash" />
+                  </button>
+                )}
               </span>
             )}
           </li>

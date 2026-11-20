@@ -5,6 +5,7 @@ import type {
   OutgoingWebSocketMessage,
   QueueTrack,
   RoomMode,
+  RoomParticipant,
   ServerRoomState,
   SocketStatus,
 } from '../types/ws'
@@ -42,12 +43,37 @@ function normalizeQueue(queue: unknown): QueueTrack[] {
   })
 }
 
+type ServerParticipant = {
+  id?: number
+  username?: string
+  role?: string
+  userId?: string | null
+}
+
+function normalizeParticipants(list: unknown): RoomParticipant[] {
+  if (!Array.isArray(list)) return []
+  return list.map((raw) => {
+    const item = (typeof raw === 'object' && raw !== null ? raw : {}) as ServerParticipant
+    return {
+      id: item.id ?? 0,
+      username: item.username ?? '',
+      role: item.role ?? 'guest',
+      userId: item.userId ?? null,
+    }
+  })
+}
+
 type UseRoomSocketResult = {
   status: SocketStatus
   serverRoomState: ServerRoomState | null
   clockOffset: number
-  sendPlay: (videoId: string, startAt: number) => void
+  kicked: boolean
+  sendPlay: (videoId: string, startAt: number, trackId?: string) => void
   sendPause: (pausedAtPosition: number) => void
+  sendHostSeek: (position: number) => void
+  sendRemoveTrack: (trackId: string) => void
+  sendHostSkip: () => void
+  sendKickParticipant: (username: string) => void
   sendAddTrack: (track: ServerRoomState['queue'][number]) => boolean
   sendToggleVote: (trackId: string) => void
   sendVoteSkip: () => void
@@ -62,6 +88,8 @@ export function useRoomSocket(roomCode?: string | null): UseRoomSocketResult {
   const [status, setStatus] = useState<SocketStatus>('disconnected')
   const [clockOffset, setClockOffset] = useState(0)
   const [serverRoomState, setServerRoomState] = useState<ServerRoomState | null>(null)
+  // Set when the server closes our socket with 4403 (kicked by the host).
+  const [kicked, setKicked] = useState(false)
 
   const applyIncomingMessage = useCallback((message: IncomingWebSocketMessage) => {
     if ('serverTime' in message) {
@@ -81,6 +109,7 @@ export function useRoomSocket(roomCode?: string | null): UseRoomSocketResult {
           startAt: message.startAt,
           pausedAtPosition: message.pausedAtPosition ?? null,
           skipVotes: message.skipVotes ?? null,
+          participants: normalizeParticipants(message.participants),
         })
         break
       }
@@ -170,11 +199,12 @@ export function useRoomSocket(roomCode?: string | null): UseRoomSocketResult {
   }, [])
 
   const sendPlay = useCallback(
-    (videoId: string, startAt: number) => {
+    (videoId: string, startAt: number, trackId?: string) => {
       sendMessage({
         type: 'HOST_PLAY',
         videoId,
         startAt,
+        trackId,
         serverTime: Date.now() + clockOffset,
       })
     },
@@ -186,6 +216,46 @@ export function useRoomSocket(roomCode?: string | null): UseRoomSocketResult {
       sendMessage({
         type: 'HOST_PAUSE',
         pausedAtPosition,
+        serverTime: Date.now() + clockOffset,
+      })
+    },
+    [clockOffset, sendMessage],
+  )
+
+  const sendHostSeek = useCallback(
+    (position: number) => {
+      sendMessage({
+        type: 'HOST_SEEK',
+        position,
+        serverTime: Date.now() + clockOffset,
+      })
+    },
+    [clockOffset, sendMessage],
+  )
+
+  const sendRemoveTrack = useCallback(
+    (trackId: string) => {
+      sendMessage({
+        type: 'REMOVE_TRACK',
+        trackId,
+        serverTime: Date.now() + clockOffset,
+      })
+    },
+    [clockOffset, sendMessage],
+  )
+
+  const sendHostSkip = useCallback(() => {
+    sendMessage({
+      type: 'HOST_SKIP',
+      serverTime: Date.now() + clockOffset,
+    })
+  }, [clockOffset, sendMessage])
+
+  const sendKickParticipant = useCallback(
+    (username: string) => {
+      sendMessage({
+        type: 'KICK_PARTICIPANT',
+        username,
         serverTime: Date.now() + clockOffset,
       })
     },
@@ -252,6 +322,7 @@ export function useRoomSocket(roomCode?: string | null): UseRoomSocketResult {
   const connect = useCallback(async () => {
     if (!roomCode) {
       setServerRoomState(null)
+      setKicked(false)
       setStatus('disconnected')
       return
     }
@@ -300,9 +371,15 @@ export function useRoomSocket(roomCode?: string | null): UseRoomSocketResult {
       setStatus((current) => (current === 'connected' ? 'reconnecting' : current))
     }
 
-    socket.onclose = () => {
+    socket.onclose = (event) => {
       wsRef.current = null
       setStatus('disconnected')
+
+      if (event.code === 4403) {
+        // The host kicked us out: never reconnect to this room.
+        setKicked(true)
+        return
+      }
 
       if (!roomCode) return
 
@@ -318,6 +395,7 @@ export function useRoomSocket(roomCode?: string | null): UseRoomSocketResult {
     if (!roomCode) {
       disconnect()
       setServerRoomState(null)
+      setKicked(false)
       return undefined
     }
 
@@ -332,8 +410,13 @@ export function useRoomSocket(roomCode?: string | null): UseRoomSocketResult {
     status,
     serverRoomState,
     clockOffset,
+    kicked,
     sendPlay,
     sendPause,
+    sendHostSeek,
+    sendRemoveTrack,
+    sendHostSkip,
+    sendKickParticipant,
     sendAddTrack,
     sendToggleVote,
     sendVoteSkip,

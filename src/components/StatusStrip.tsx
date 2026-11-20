@@ -16,8 +16,10 @@ type StatusStripProps = {
   speakerId: string
   viewerId: string
   canNameHost: boolean
+  canKick?: boolean
   onNameHost: (id: string) => void
   onDelegate: (id: string) => void
+  onKick?: (id: string) => void
 }
 
 export function StatusStrip({
@@ -30,8 +32,10 @@ export function StatusStrip({
   speakerId,
   viewerId,
   canNameHost,
+  canKick = false,
   onNameHost,
   onDelegate,
+  onKick,
 }: StatusStripProps) {
   const [listOpen, setListOpen] = useState(false)
   const wrapRef = useRef<HTMLDivElement>(null)
@@ -140,6 +144,8 @@ export function StatusStrip({
                 person.id !== speakerId &&
                 person.id !== hostId
               const nominate = person.id !== hostId && canNameHost
+              const kick =
+                canKick && !!person.username && person.id !== hostId && person.id !== viewerId
               return (
                 <li key={person.id}>
                   <span
@@ -156,7 +162,7 @@ export function StatusStrip({
                   {inPerson && person.id === speakerId && (
                     <span className="pbadge lecture">Lecture</span>
                   )}
-                  {(reclaim || handBack || give || nominate) && (
+                  {(reclaim || handBack || give || nominate || kick) && (
                     <span className="pacts">
                       {reclaim && (
                         <button
@@ -188,6 +194,14 @@ export function StatusStrip({
                           onClick={() => onNameHost(person.id)}
                         >
                           Nommer hôte
+                        </button>
+                      )}
+                      {kick && (
+                        <button
+                          className="nominate"
+                          onClick={() => onKick?.(person.id)}
+                        >
+                          Virer
                         </button>
                       )}
                     </span>

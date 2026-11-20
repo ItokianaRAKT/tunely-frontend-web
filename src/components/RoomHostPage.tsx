@@ -13,7 +13,27 @@ import { SEED_PARTICIPANTS } from '../data/participants'
 import { SEED_TRACKS } from '../data/tracks'
 import type { NewTrack } from '../data/tracks'
 import { useApp } from '../context/app-context'
-import type { RoomMode } from '../types/ws'
+import type { Participant } from '../data/participants'
+import type { RoomMode, RoomParticipant } from '../types/ws'
+
+const PARTICIPANT_COLORS = ['#3b3d40', '#244cff', '#6a6b6d', '#8a8b8d', '#a5a6a8', '#c2c3c5']
+
+function toDisplayParticipant(person: RoomParticipant): Participant {
+  const name = person.username || `Invité ${person.id}`
+  const parts = name.trim().split(/\s+/)
+  const initials = (
+    parts.length > 1 ? `${parts[0][0]}${parts[1][0]}` : parts[0].slice(0, 2)
+  ).toUpperCase()
+  let hash = 0
+  for (const ch of name) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0
+  return {
+    id: person.userId ?? person.username,
+    name,
+    initials,
+    color: PARTICIPANT_COLORS[hash % PARTICIPANT_COLORS.length],
+    username: person.username,
+  }
+}
 
 export function RoomHostPage() {
   const {
@@ -29,7 +49,13 @@ export function RoomHostPage() {
     delegateSpeaker,
     setBackendCode,
   } = useApp()
-  const participants = room?.participants ?? SEED_PARTICIPANTS
+  const serverRoomState = roomSocket.serverRoomState
+  // Prefer the live roster from the room state; fall back to the local
+  // mock while no backend room is connected.
+  const liveParticipants = serverRoomState?.participants.length
+    ? serverRoomState.participants.map(toDisplayParticipant)
+    : null
+  const participants = liveParticipants ?? room?.participants ?? SEED_PARTICIPANTS
   const initialTracks = room?.initialTracks ?? SEED_TRACKS
   const meId = user?.id ?? ''
   const fallbackHostId = meId || SEED_PARTICIPANTS[0].id
@@ -95,7 +121,6 @@ export function RoomHostPage() {
     [ensureBackendRoom, getToken, noticeBackendDown, showToast],
   )
 
-  const serverRoomState = roomSocket.serverRoomState
   const shouldPlayAudio =
     serverRoomState == null ? true :
     serverRoomState.mode === 'REMOTE' ? true :
@@ -110,6 +135,9 @@ export function RoomHostPage() {
     playing,
     newIndex,
     pausePlayback,
+    togglePlay,
+    skipTrack,
+    seekTo,
     addTrack,
   } = usePlayer(showToast, initialTracks, {
     youtube: true,
@@ -138,12 +166,38 @@ export function RoomHostPage() {
   const canTogglePlayback = userId === (serverRoomState?.hostId ?? room?.hostId ?? userId)
   const handleTogglePlay = useCallback(() => {
     if (!canTogglePlayback || !track) return
-    if (serverRoomState?.isPlaying) {
+    // In PARTY mode the server never drives the local player, so the host's
+    // command must be applied locally as well (fall back to the local state
+    // when no backend room is connected).
+    const shouldPause = serverRoomState ? serverRoomState.isPlaying : playing
+    if (shouldPause) {
       roomSocket.sendPause(time)
+      if (playing) pausePlayback()
       return
     }
-    roomSocket.sendPlay(track.youtubeId ?? '', Date.now() + roomSocket.clockOffset)
-  }, [canTogglePlayback, roomSocket, serverRoomState?.isPlaying, time, track])
+    // Identify the played song on the server so it becomes the room's
+    // current track (protected from removal, advanced on skip).
+    const serverTrack = serverRoomState?.queue.find(
+      (item) =>
+        (track.youtubeId != null && item.youtubeId === track.youtubeId) ||
+        (item.title === track.title && item.artist === track.artist),
+    )
+    roomSocket.sendPlay(
+      track.youtubeId ?? '',
+      Date.now() + roomSocket.clockOffset,
+      serverTrack?.id || undefined,
+    )
+    if (!playing) togglePlay()
+  }, [canTogglePlayback, pausePlayback, playing, roomSocket, serverRoomState, time, togglePlay, track])
+
+  const handleSeek = useCallback(
+    (seconds: number) => {
+      if (!canTogglePlayback) return
+      seekTo(seconds)
+      roomSocket.sendHostSeek(seconds)
+    },
+    [canTogglePlayback, roomSocket, seekTo],
+  )
 
   const handleNav = useCallback(
     (label: string) => {
@@ -188,6 +242,8 @@ export function RoomHostPage() {
   const handleAddTrack = useCallback(
     (input: NewTrack) => {
       const title = input.title.trim()
+      const artist = input.artist.trim()
+      const normalized = { ...input, title, artist }
       const trackId = `${Date.now()}-${Math.random().toString(16).slice(2)}`
       setQueueOpen(true)
       setAdding(false)
@@ -195,7 +251,7 @@ export function RoomHostPage() {
       const sent = roomSocket.sendAddTrack({
         id: trackId,
         title,
-        artist: input.artist.trim(),
+        artist,
         youtubeId: null,
         votes: 0,
         addedByUserId: userId ?? null,
@@ -203,8 +259,10 @@ export function RoomHostPage() {
       })
 
       if (sent) {
-        // The server owns the queue: QUEUE_SYNC / ROOM_STATE refresh it.
-        showToast(`« ${title} » ajouté à la file`)
+        // The server owns the queue (QUEUE_SYNC refreshes the panel), but
+        // the local list still drives the stage: mirror the addition so a
+        // fresh room is not stuck on an empty stage.
+        addTrack(normalized)
         return
       }
 
@@ -212,10 +270,10 @@ export function RoomHostPage() {
       void ensureBackendRoom()
         .then((code) => {
           if (!code) throw new Error('Backend unreachable')
-          return proposeTrack(getToken, code, input.title, input.artist, input.duration)
+          return proposeTrack(getToken, code, title, artist, input.duration)
         })
         .then(() => {
-          addTrack(input)
+          addTrack(normalized)
         })
         .catch(() => {
           showToast('Ajout impossible · serveur injoignable')
@@ -303,6 +361,21 @@ export function RoomHostPage() {
     dissolveRoom()
   }, [pausePlayback, dissolveRoom])
 
+  // The host kicked us (socket closed with 4403): announce it, stop the
+  // music and fall back to the home screen.
+  useEffect(() => {
+    if (!roomSocket.kicked) return
+    const announce = window.setTimeout(() => {
+      showToast('Vous avez été retiré de la room')
+      pausePlayback()
+    }, 0)
+    const leave = window.setTimeout(() => leaveRoom(), 1800)
+    return () => {
+      window.clearTimeout(announce)
+      window.clearTimeout(leave)
+    }
+  }, [roomSocket.kicked, leaveRoom, pausePlayback, showToast])
+
   const queueEntries = ((serverRoomState?.queue.length ? serverRoomState.queue : tracks) as Array<{
     id?: string
     title: string
@@ -321,10 +394,47 @@ export function RoomHostPage() {
       art: track.art,
     }))
 
+  // The room state owns the "now playing" marker; fall back to the local
+  // player index while no server state is available.
+  const serverCurrentIndex = serverRoomState?.currentTrack
+    ? queueTracks.findIndex((item) => item.id === serverRoomState.currentTrack?.id)
+    : -1
+  const displayedIndex = serverCurrentIndex >= 0 ? serverCurrentIndex : currentIndex
+
   const handleVoteSkip = useCallback(() => {
     roomSocket.sendVoteSkip()
     showToast('Vote pour passer enregistré')
   }, [roomSocket, showToast])
+
+  const handleRemoveTrack = useCallback(
+    (trackId: string) => {
+      const target = queueTracks.find((item) => item.id === trackId)
+      roomSocket.sendRemoveTrack(trackId)
+      showToast(
+        target ? `« ${target.title} » retiré de la file` : 'Titre retiré de la file',
+      )
+    },
+    [queueTracks, roomSocket, showToast],
+  )
+
+  const handleSkip = useCallback(() => {
+    if (!canTogglePlayback) return
+    roomSocket.sendHostSkip()
+    skipTrack()
+    showToast('Chanson passée')
+  }, [canTogglePlayback, roomSocket, skipTrack, showToast])
+
+  // Only the backend host may kick, and only from the live roster.
+  const canKick = liveParticipants != null && serverRoomState?.hostId === userId
+  const handleKick = useCallback(
+    (id: string) => {
+      const target = participants.find((p) => p.id === id)
+      if (!target?.username) return
+      roomSocket.sendKickParticipant(target.username)
+      showToast(`${target.name} a été retiré de la room`)
+    },
+    [participants, roomSocket, showToast],
+  )
 
   return (
     <>
@@ -341,26 +451,30 @@ export function RoomHostPage() {
         />
         <Stage
           track={track}
-          index={currentIndex}
+          index={displayedIndex}
           time={time}
-          readOnly={true}
+          readOnly={!canTogglePlayback}
           canTogglePlayback={canTogglePlayback}
           banner={stageBanner}
           onTogglePlay={handleTogglePlay}
-          onSeek={() => undefined}
+          onSeek={handleSeek}
+          onSkip={handleSkip}
         />
         <QueuePanel
           tracks={queueTracks}
-          currentIndex={currentIndex}
+          currentIndex={displayedIndex}
           newIndex={newIndex}
           votes={votes}
           skipVotes={serverRoomState?.skipVotes ?? null}
+          participantCount={participants.length}
           canAdd
+          canRemove={canTogglePlayback}
           open={queueOpen}
           onToggle={() => setQueueOpen((value) => !value)}
           onVote={handleVote}
           onVoteSkip={handleVoteSkip}
           onAdd={() => setAdding(true)}
+          onRemove={handleRemoveTrack}
           onQuit={quitRoom}
         />
         <StatusStrip
@@ -368,13 +482,15 @@ export function RoomHostPage() {
           time={time}
           upcoming={tracks[upcomingIndex]}
           participants={participants}
-          hostId={hostId}
+          hostId={serverRoomState?.hostId ?? hostId}
           playback={room?.playback ?? 'in-person'}
           speakerId={room?.speakerId ?? fallbackSpeakerId}
           viewerId={meId}
           canNameHost={canNameHost}
+          canKick={canKick}
           onNameHost={nameHost}
           onDelegate={handleDelegate}
+          onKick={handleKick}
         />
       </main>
 
