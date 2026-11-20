@@ -409,6 +409,18 @@ export function RoomHostPage() {
     showToast('Chanson passée')
   }, [canTogglePlayback, roomSocket, skipTrack, showToast])
 
+  // Only the backend host may kick, and only from the live roster.
+  const canKick = liveParticipants != null && serverRoomState?.hostId === userId
+  const handleKick = useCallback(
+    (id: string) => {
+      const target = participants.find((p) => p.id === id)
+      if (!target?.username) return
+      roomSocket.sendKickParticipant(target.username)
+      showToast(`${target.name} a été retiré de la room`)
+    },
+    [participants, roomSocket, showToast],
+  )
+
   return (
     <>
       <IconSprite />
@@ -460,8 +472,10 @@ export function RoomHostPage() {
           speakerId={room?.speakerId ?? fallbackSpeakerId}
           viewerId={meId}
           canNameHost={canNameHost}
+          canKick={canKick}
           onNameHost={nameHost}
           onDelegate={handleDelegate}
+          onKick={handleKick}
         />
       </main>
 

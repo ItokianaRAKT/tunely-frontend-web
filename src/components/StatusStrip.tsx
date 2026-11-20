@@ -144,6 +144,8 @@ export function StatusStrip({
                 person.id !== speakerId &&
                 person.id !== hostId
               const nominate = person.id !== hostId && canNameHost
+              const kick =
+                canKick && !!person.username && person.id !== hostId && person.id !== viewerId
               return (
                 <li key={person.id}>
                   <span
@@ -160,7 +162,7 @@ export function StatusStrip({
                   {inPerson && person.id === speakerId && (
                     <span className="pbadge lecture">Lecture</span>
                   )}
-                  {(reclaim || handBack || give || nominate) && (
+                  {(reclaim || handBack || give || nominate || kick) && (
                     <span className="pacts">
                       {reclaim && (
                         <button
@@ -192,6 +194,14 @@ export function StatusStrip({
                           onClick={() => onNameHost(person.id)}
                         >
                           Nommer hôte
+                        </button>
+                      )}
+                      {kick && (
+                        <button
+                          className="nominate"
+                          onClick={() => onKick?.(person.id)}
+                        >
+                          Virer
                         </button>
                       )}
                     </span>
