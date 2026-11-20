@@ -361,6 +361,21 @@ export function RoomHostPage() {
     dissolveRoom()
   }, [pausePlayback, dissolveRoom])
 
+  // The host kicked us (socket closed with 4403): announce it, stop the
+  // music and fall back to the home screen.
+  useEffect(() => {
+    if (!roomSocket.kicked) return
+    const announce = window.setTimeout(() => {
+      showToast('Vous avez été retiré de la room')
+      pausePlayback()
+    }, 0)
+    const leave = window.setTimeout(() => leaveRoom(), 1800)
+    return () => {
+      window.clearTimeout(announce)
+      window.clearTimeout(leave)
+    }
+  }, [roomSocket.kicked, leaveRoom, pausePlayback, showToast])
+
   const queueEntries = ((serverRoomState?.queue.length ? serverRoomState.queue : tracks) as Array<{
     id?: string
     title: string
