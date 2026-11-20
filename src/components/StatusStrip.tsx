@@ -16,8 +16,10 @@ type StatusStripProps = {
   speakerId: string
   viewerId: string
   canNameHost: boolean
+  canKick?: boolean
   onNameHost: (id: string) => void
   onDelegate: (id: string) => void
+  onKick?: (id: string) => void
 }
 
 export function StatusStrip({
@@ -30,8 +32,10 @@ export function StatusStrip({
   speakerId,
   viewerId,
   canNameHost,
+  canKick = false,
   onNameHost,
   onDelegate,
+  onKick,
 }: StatusStripProps) {
   const [listOpen, setListOpen] = useState(false)
   const wrapRef = useRef<HTMLDivElement>(null)

@@ -234,6 +234,7 @@ export function RoomGuestPage() {
           newIndex={newIndex}
           votes={votes}
           skipVotes={serverRoomState?.skipVotes ?? null}
+          participantCount={participants.length}
           canAdd={false}
           open={queueOpen}
           onToggle={() => setQueueOpen((value) => !value)}

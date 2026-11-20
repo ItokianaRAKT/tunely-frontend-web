@@ -13,7 +13,27 @@ import { SEED_PARTICIPANTS } from '../data/participants'
 import { SEED_TRACKS } from '../data/tracks'
 import type { NewTrack } from '../data/tracks'
 import { useApp } from '../context/app-context'
-import type { RoomMode } from '../types/ws'
+import type { Participant } from '../data/participants'
+import type { RoomMode, RoomParticipant } from '../types/ws'
+
+const PARTICIPANT_COLORS = ['#3b3d40', '#244cff', '#6a6b6d', '#8a8b8d', '#a5a6a8', '#c2c3c5']
+
+function toDisplayParticipant(person: RoomParticipant): Participant {
+  const name = person.username || `Invité ${person.id}`
+  const parts = name.trim().split(/\s+/)
+  const initials = (
+    parts.length > 1 ? `${parts[0][0]}${parts[1][0]}` : parts[0].slice(0, 2)
+  ).toUpperCase()
+  let hash = 0
+  for (const ch of name) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0
+  return {
+    id: person.userId ?? person.username,
+    name,
+    initials,
+    color: PARTICIPANT_COLORS[hash % PARTICIPANT_COLORS.length],
+    username: person.username,
+  }
+}
 
 export function RoomHostPage() {
   const {
@@ -29,7 +49,13 @@ export function RoomHostPage() {
     delegateSpeaker,
     setBackendCode,
   } = useApp()
-  const participants = room?.participants ?? SEED_PARTICIPANTS
+  const serverRoomState = roomSocket.serverRoomState
+  // Prefer the live roster from the room state; fall back to the local
+  // mock while no backend room is connected.
+  const liveParticipants = serverRoomState?.participants.length
+    ? serverRoomState.participants.map(toDisplayParticipant)
+    : null
+  const participants = liveParticipants ?? room?.participants ?? SEED_PARTICIPANTS
   const initialTracks = room?.initialTracks ?? SEED_TRACKS
   const meId = user?.id ?? ''
   const fallbackHostId = meId || SEED_PARTICIPANTS[0].id
@@ -95,7 +121,6 @@ export function RoomHostPage() {
     [ensureBackendRoom, getToken, noticeBackendDown, showToast],
   )
 
-  const serverRoomState = roomSocket.serverRoomState
   const shouldPlayAudio =
     serverRoomState == null ? true :
     serverRoomState.mode === 'REMOTE' ? true :
@@ -414,6 +439,7 @@ export function RoomHostPage() {
           newIndex={newIndex}
           votes={votes}
           skipVotes={serverRoomState?.skipVotes ?? null}
+          participantCount={participants.length}
           canAdd
           canRemove={canTogglePlayback}
           open={queueOpen}
@@ -429,7 +455,7 @@ export function RoomHostPage() {
           time={time}
           upcoming={tracks[upcomingIndex]}
           participants={participants}
-          hostId={hostId}
+          hostId={serverRoomState?.hostId ?? hostId}
           playback={room?.playback ?? 'in-person'}
           speakerId={room?.speakerId ?? fallbackSpeakerId}
           viewerId={meId}

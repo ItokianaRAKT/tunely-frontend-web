@@ -21,6 +21,7 @@ type QueuePanelProps = {
   newIndex: number | null
   votes: Record<string, Vote>
   skipVotes?: { count: number; required: number } | null
+  participantCount: number
   canAdd?: boolean
   canRemove?: boolean
   open: boolean
@@ -38,6 +39,7 @@ export function QueuePanel({
   newIndex,
   votes,
   skipVotes = null,
+  participantCount,
   canAdd = true,
   canRemove = false,
   open,
@@ -67,7 +69,7 @@ export function QueuePanel({
       <div className="who">
         <span>
           <Icon name="users" />
-          4 participants
+          {participantCount} participant{participantCount > 1 ? 's' : ''}
         </span>
         <button className="ghost" onClick={onQuit}>
           <Icon name="exit" />

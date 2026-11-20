@@ -3,6 +3,8 @@ export type Participant = {
   name: string
   initials: string
   color: string
+  /** Backend username, present for live room participants (used to kick). */
+  username?: string
 }
 
 export const SEED_PARTICIPANTS: Participant[] = [
